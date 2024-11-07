@@ -1,25 +1,62 @@
-import logo from './logo.svg';
+import React, { useEffect } from 'react';
 import './App.css';
+import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import LoginPage from './pages/LoginPage';
+import SignUpPage from './pages/SignUpPage';
+import HomePage from './pages/HomePage';
+import { Amplify, Auth } from 'aws-amplify';
+import { useAppContext } from './context/AppContext';
+
+Amplify.configure({
+  Auth: {
+    region: "ap-southeast-4",
+    userPoolId: "ap-southeast-4_NafqYoG7v",
+    userPoolWebClientId: "204io607m870s4g626vnm6viqq"
+  }
+});
 
 function App() {
+  const { isLoggedIn, setIsLoggedIn } = useAppContext();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
+
+  useEffect(() => {
+    // Navigate based on the authentication state
+    if (isLoggedIn) {
+      navigate('/');
+    } else {
+      navigate('/login');
+    }
+  }, [isLoggedIn, navigate]);
+
+  const checkAuth = async () => {
+    try {
+      await Auth.currentAuthenticatedUser();
+      setIsLoggedIn(true);
+      console.log("User is logged in");
+    } catch (error) {
+      setIsLoggedIn(false);
+      console.log("User is not logged in");
+    }
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignUpPage />} />
+      <Route path="/" element={<HomePage />} />
+    </Routes>
   );
 }
 
-export default App;
+// Need this because you cant use useNavigate on the same level as the Router
+export default function AppWithRouter() {
+  return (
+    <Router>
+      <App />
+    </Router>
+  );
+}
