@@ -21,7 +21,7 @@ function App() {
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  });
 
   useEffect(() => {
     // Navigate based on the authentication state

@@ -6,7 +6,7 @@ const AppContext = createContext();
 
 export const AppContextProvider = ({ children }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [agents, setAgents] = useState([new DefaultAgent(), new ShanasSourdoughAgent()]);
+    const [agents] = useState([new DefaultAgent(), new ShanasSourdoughAgent()]);
 
     return (
         <AppContext.Provider value={{

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { colors } from './SharedStyles';
 
 function Alert({ title, message, actions = [{ label: 'Ok', handler: null }], onClose }) {
