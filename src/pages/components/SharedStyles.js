@@ -4,4 +4,5 @@ export const colors = {
     background: "#222",
     text: "#fff",
     cardColor: "#444",
+    chatBox: "#ccc",
 }

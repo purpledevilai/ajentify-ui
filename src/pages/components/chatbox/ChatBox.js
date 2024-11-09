@@ -1,21 +1,15 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import Message from './Message';
 import TypingIndicator from './TypingIndicator';
 import UserInput from './UserInput';
+import Alert from '../Alert';
+import { colors } from '../SharedStyles';
 
 const ChatBox = ({ agent }) => {
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState(agent.getMessages());
     const [typing, setTyping] = useState(false);
+    const [alert, setAlert] = useState(null);
     const messagesEndRef = useRef(null);
-
-    useEffect(() => {
-        // Display initial message from the chatbot
-        setMessages([{ text: "Hello, how can I help you?", isUser: false }]);
-    }, []);
-
-    useEffect(() => {
-        scrollToBottom();
-    }, [messages]);
 
     const scrollToBottom = () => {
         messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -27,21 +21,33 @@ const ChatBox = ({ agent }) => {
             ...prevMessages,
             { text: message, isUser: true }
         ]);
-        setTyping(true); // Show typing indicator while waiting for response from ChatService
+        setTyping(true); // Show typing indicator while waiting for response from agent
 
         try {
-            // Fetch response from ChatService
+            // Fetch response from agent
+            const response = await agent.sendMessage(message);
 
-            const response = await agent.sendMessage(message)
-            // Display response from the chatbot
-            setMessages((prevMessages) => [
-                ...prevMessages,
-                { text: response, isUser: false }
-            ]);
+            // Check if the response contains an error
+            if (response.error) {
+                setAlert({
+                    title: 'Error',
+                    message: response.error,
+                    onClose: () => setAlert(null)
+                });
+            } else {
+                // Update messages if response is successful
+                setMessages([...agent.getMessages()]);
+            }
         } catch (error) {
-            console.error('Error sending message:', error);
+            console.error('Error in sendMessage:', error);
+            setAlert({
+                title: 'Error',
+                message: 'An unexpected error occurred. Please try again.',
+                onClose: () => setAlert(null)
+            });
         } finally {
             setTyping(false); // Hide typing indicator after receiving response
+            scrollToBottom();
         }
     };
 
@@ -55,6 +61,15 @@ const ChatBox = ({ agent }) => {
                 <div ref={messagesEndRef} />
             </div>
             <UserInput onSendMessage={handleSendMessage} />
+
+            {/* Display Alert if there is an error */}
+            {alert && (
+                <Alert
+                    title={alert.title}
+                    message={alert.message}
+                    onClose={alert.onClose}
+                />
+            )}
         </div>
     );
 };
@@ -65,7 +80,7 @@ const styles = {
         maxWidth: '800px',
         width: '100%',
         height: '600px',
-        border: '2px solid #ccc',
+        border: `2px solid ${colors.chatBox}`,
         borderRadius: '10px',
         padding: '20px',
         position: 'relative',

@@ -55,6 +55,7 @@ const styles = {
         borderRadius: '15px',
         maxWidth: '70%',
         backgroundColor: '#dbdbdb',
+        color: '#000', // To make text visible on light background
         wordWrap: 'break-word',
     },
 };

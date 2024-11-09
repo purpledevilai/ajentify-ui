@@ -26,6 +26,7 @@ function App() {
   useEffect(() => {
     // Navigate based on the authentication state
     if (isLoggedIn) {
+      console.log(`Access token: ${Auth.user.signInUserSession.accessToken.jwtToken ?? 'No token'}`);
       navigate('/');
     } else {
       navigate('/login');

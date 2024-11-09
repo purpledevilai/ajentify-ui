@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import SendButton from './SendButton';
+import { colors } from '../SharedStyles';
 
 const UserInput = ({ onSendMessage }) => {
     const [message, setMessage] = useState("");
@@ -38,9 +39,9 @@ const styles = {
         bottom: 0,
         right: 0,
         display: 'flex',
-        backgroundColor: '#f2f2f2',
+        backgroundColor: colors.chatBox,
         padding: '10px',
-        borderRadius: '10px',
+        borderRadius: '8px',
         alignItems: 'center', // Aligns input and button vertically
     },
     inputField: {
