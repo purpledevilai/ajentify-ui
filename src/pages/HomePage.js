@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import ChatBox from "./components/chatbox/ChatBox";
 import { Auth } from 'aws-amplify';
 import { useNavigate } from 'react-router-dom';
@@ -11,7 +11,32 @@ function HomePage() {
   const { agents, setIsLoggedIn } = useAppContext();
   const [alert, setAlert] = useState({ isOpen: false, title: '', message: '' });
   const [selectedAgent, setSelectedAgent] = useState(agents[0]);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const sidebarRef = useRef(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+        setIsSidebarOpen(false);
+      }
+    };
+
+    if (isMobile && isSidebarOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isMobile, isSidebarOpen]);
 
   const handleLogout = async () => {
     try {
@@ -44,17 +69,43 @@ function HomePage() {
     }
   };
 
+  const toggleSidebar = () => {
+    setIsSidebarOpen(!isSidebarOpen);
+  };
+
+  const handleFinishConversation = () => {
+    setAlert({
+      isOpen: true,
+      title: 'Dont work yet',
+      message: 'The idea is that this will trigger the agent to remember this conversation',
+    });
+  }
+
   return (
     <div style={styles.appContainer}>
       <header style={styles.header}>
-        <h1 style={styles.title}>Ajentify</h1>
+        <div style={styles.headerLeft}>
+          {isMobile && (
+            <button style={styles.hamburger} onClick={toggleSidebar}>
+              ☰
+            </button>
+          )}
+          <h1 style={styles.title}>Ajentify</h1>
+        </div>
         <Button onClick={handleLogout} style={styles.logoutButton}>
           Logout
         </Button>
       </header>
+
       <div style={styles.outerContentContainer}>
-        <div style={styles.contentContainer}>
-          <div style={styles.sidebar}>
+        {(isSidebarOpen || !isMobile) && (
+          <div
+            ref={sidebarRef}
+            style={{
+              ...styles.sidebar,
+              ...(isMobile ? styles.mobileSidebar : styles.nonMobileSidebar),
+            }}
+          >
             <label style={styles.label}>Select Agent:</label>
             <select
               value={selectedAgent.getName()}
@@ -67,11 +118,12 @@ function HomePage() {
                 </option>
               ))}
             </select>
-            <Button style={styles.finishButton}>Finish Conversation</Button>
+            <Button onClick={handleFinishConversation} style={styles.finishButton}>Finish Conversation</Button>
           </div>
-          <div style={styles.chatContainer}>
-            <ChatBox key={selectedAgent.getName()} agent={selectedAgent}/>
-          </div>
+        )}
+        
+        <div style={styles.chatContainer}>
+          <ChatBox key={selectedAgent.getName()} agent={selectedAgent} />
         </div>
       </div>
 
@@ -90,7 +142,6 @@ const styles = {
   appContainer: {
     display: 'flex',
     flexDirection: 'column',
-    alignItems: 'center',
     height: '100vh',
     backgroundColor: colors.background,
     color: colors.text,
@@ -101,29 +152,36 @@ const styles = {
     alignItems: 'center',
     width: '100%',
     padding: '10px 20px',
+    boxSizing: 'border-box',
     backgroundColor: colors.cardColor,
     color: colors.text,
   },
+  headerLeft: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  hamburger: {
+    fontSize: '1.5rem',
+    background: 'none',
+    border: 'none',
+    cursor: 'pointer',
+    marginRight: '10px',
+  },
   title: {
-    margin: '0 10px', // Adds margin to avoid crowding the edges
     fontSize: '1.5rem',
     color: colors.primary,
+    margin: '0',
   },
   logoutButton: {
-    margin: '0 10px', // Adds margin to avoid crowding the edges
+    margin: '0 10px',
   },
   outerContentContainer: {
     display: 'flex',
     justifyContent: 'center',
     width: '100%',
-    padding: '20px 20px', // Adds padding on left and right sides
+    padding: '20px',
     boxSizing: 'border-box',
-  },
-  contentContainer: {
-    display: 'flex',
-    flex: 1,
-    maxWidth: '1200px', // Limits the maximum width of the content to 1200px
-    width: '100%',
+    position: 'relative',
   },
   sidebar: {
     display: 'flex',
@@ -132,6 +190,21 @@ const styles = {
     width: '200px',
     marginRight: '20px',
     color: colors.text,
+    padding: '20px',
+    zIndex: 10,
+  },
+  mobileSidebar: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    height: '100%',
+    width: '200px',
+    backgroundColor: colors.cardColor,
+    zIndex: 20,
+    boxShadow: '2px 0px 5px rgba(0,0,0,0.5)',
+  },
+  nonMobileSidebar: {
+    backgroundColor: 'transparent', // No background on non-mobile view
   },
   label: {
     marginBottom: '10px',
@@ -157,8 +230,6 @@ const styles = {
   },
   chatContainer: {
     display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
     flex: 1,
     color: colors.text,
     backgroundColor: colors.background,

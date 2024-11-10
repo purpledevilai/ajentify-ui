@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import './App.css';
-import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import HomePage from './pages/HomePage';
@@ -18,20 +18,18 @@ Amplify.configure({
 function App() {
   const { isLoggedIn, setIsLoggedIn } = useAppContext();
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     checkAuth();
-  });
+  }, []);
 
   useEffect(() => {
-    // Navigate based on the authentication state
-    if (isLoggedIn) {
-      console.log(`Access token: ${Auth.user.signInUserSession.accessToken.jwtToken ?? 'No token'}`);
-      navigate('/');
-    } else {
+    // Only redirect to /login if accessing the home page without being logged in
+    if (!isLoggedIn && location.pathname === '/') {
       navigate('/login');
     }
-  }, [isLoggedIn, navigate]);
+  }, [isLoggedIn, navigate, location.pathname]);
 
   const checkAuth = async () => {
     try {
@@ -53,7 +51,7 @@ function App() {
   );
 }
 
-// Need this because you cant use useNavigate on the same level as the Router
+// Wrapper for Router
 export default function AppWithRouter() {
   return (
     <Router>
