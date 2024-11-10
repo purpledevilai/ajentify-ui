@@ -24,7 +24,7 @@ function App() {
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  });
 
   useEffect(() => {
     if (!loading) {
