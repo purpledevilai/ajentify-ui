@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Message from './Message';
 import TypingIndicator from './TypingIndicator';
 import UserInput from './UserInput';
@@ -47,9 +47,13 @@ const ChatBox = ({ agent }) => {
             });
         } finally {
             setTyping(false); // Hide typing indicator after receiving response
-            scrollToBottom();
         }
     };
+
+    // Scroll to bottom whenever messages or typing state changes
+    useEffect(() => {
+        scrollToBottom();
+    }, [messages, typing]);
 
     return (
         <div style={styles.container}>
@@ -58,7 +62,7 @@ const ChatBox = ({ agent }) => {
                     <Message key={index} message={message.text} isUser={message.isUser} />
                 ))}
                 {typing && <TypingIndicator />} {/* Show typing indicator if typing */}
-                <div ref={messagesEndRef} />
+                <div ref={messagesEndRef} style={styles.messagesEndSpacer} /> {/* Spacer */}
             </div>
             <UserInput onSendMessage={handleSendMessage} />
 
@@ -91,6 +95,10 @@ const styles = {
     messages: {
         height: 'calc(100% - 40px)',
         overflowY: 'auto',
+        paddingBottom: '20px', // Adds space for the last message
+    },
+    messagesEndSpacer: {
+        height: '100px', // Same as the bottom padding of messages
     },
 };
 

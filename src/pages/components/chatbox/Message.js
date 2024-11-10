@@ -8,16 +8,18 @@ const Message = ({ message, isUser }) => {
     };
 
     if (isUser === false) {
-        const htmlContent = marked.parse(message, { renderer });
+        // Convert newlines to <br> for bot messages to preserve line breaks
+        const htmlContent = marked.parse(message.replace(/\n/g, '<br>'), { renderer });
         return (
             <div style={styles.botMessageContainer}>
                 <div style={styles.botMessage} dangerouslySetInnerHTML={{ __html: htmlContent }} />
             </div>
         );
     }
+    
     return (
         <div style={styles.userMessageContainer}>
-            <div style={styles.userMessage}>
+            <div style={{ ...styles.userMessage, whiteSpace: 'pre-wrap' }}>
                 {message}
             </div>
         </div>
