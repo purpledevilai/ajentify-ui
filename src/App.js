@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import LoginPage from './pages/LoginPage';
@@ -17,19 +17,24 @@ Amplify.configure({
 
 function App() {
   const { isLoggedIn, setIsLoggedIn } = useAppContext();
+  const [loading, setLoading] = useState(true); // Loading state for initial check
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     checkAuth();
-  }, []);
+  });
 
   useEffect(() => {
-    // Only redirect to /login if accessing the home page without being logged in
-    if (!isLoggedIn && location.pathname === '/') {
-      navigate('/login');
+    if (!loading) {
+      // Redirect based on authentication status
+      if (isLoggedIn) {
+        navigate('/');
+      } else if (location.pathname === '/') {
+        navigate('/login');
+      }
     }
-  }, [isLoggedIn, navigate, location.pathname]);
+  }, [isLoggedIn, loading, navigate, location.pathname]);
 
   const checkAuth = async () => {
     try {
@@ -39,8 +44,15 @@ function App() {
     } catch (error) {
       setIsLoggedIn(false);
       console.log("User is not logged in");
+    } finally {
+      setLoading(false); // Mark loading as complete once authentication is checked
     }
   };
+
+  // Show a loading component while checking authentication status
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <Routes>
