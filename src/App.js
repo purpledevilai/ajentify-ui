@@ -6,6 +6,7 @@ import SignUpPage from './pages/SignUpPage';
 import HomePage from './pages/HomePage';
 import { Amplify, Auth } from 'aws-amplify';
 import { useAppContext } from './context/AppContext';
+import { colors } from './pages/components/SharedStyles';
 
 Amplify.configure({
   Auth: {
@@ -23,7 +24,7 @@ function App() {
 
   useEffect(() => {
     checkAuth();
-  });
+  }, []);
 
   useEffect(() => {
     if (!loading) {
@@ -49,9 +50,13 @@ function App() {
     }
   };
 
-  // Show a loading component while checking authentication status
+  // Show a loading spinner while checking authentication status
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div style={styles.loadingContainer}>
+        <div style={styles.spinner}></div>
+      </div>
+    );
   }
 
   return (
@@ -71,3 +76,33 @@ export default function AppWithRouter() {
     </Router>
   );
 }
+
+// Inline styles for loading screen and spinner
+const styles = {
+  loadingContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100vh',
+    backgroundColor: colors.background, // Set background color from shared styles
+  },
+  spinner: {
+    width: '50px',
+    height: '50px',
+    border: '5px solid rgba(255, 255, 255, 0.3)',
+    borderTop: `5px solid ${colors.primary}`,
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+  },
+};
+
+// Keyframes for spinner animation
+const keyframes = `
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}`;
+
+// Inject the keyframes into the document
+const styleSheet = document.styleSheets[0];
+styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
