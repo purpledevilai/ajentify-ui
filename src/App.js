@@ -42,6 +42,7 @@ function App() {
       await Auth.currentAuthenticatedUser();
       setIsLoggedIn(true);
       console.log("User is logged in");
+      console.log(`access token: ${Auth.user.signInUserSession.accessToken.jwtToken ?? 'undefined'}`);
     } catch (error) {
       setIsLoggedIn(false);
       console.log("User is not logged in");
