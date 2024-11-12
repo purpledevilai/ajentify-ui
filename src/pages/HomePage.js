@@ -73,7 +73,7 @@ function HomePage() {
           />
         )}
         
-        <div style={styles.chatContainer}>
+        <div style={styles.centeredChatContainer}>
           <ChatBox key={selectedAgent.getName()} agent={selectedAgent} />
         </div>
       </div>
@@ -99,17 +99,17 @@ const styles = {
   },
   outerContentContainer: {
     display: 'flex',
-    justifyContent: 'center',
+    flex: 1,
     width: '100%',
+    overflow: 'hidden',
+  },
+  centeredChatContainer: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    flex: 1,
     padding: '20px',
     boxSizing: 'border-box',
-    position: 'relative',
-  },
-  chatContainer: {
-    display: 'flex',
-    flex: 1,
-    color: colors.text,
-    backgroundColor: colors.background,
   },
 };
 

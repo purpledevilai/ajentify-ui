@@ -3,6 +3,7 @@ export const colors = {
     secondary: "#000",
     background: "#222",
     text: "#fff",
+    secondaryText: "#aaa",
     cardColor: "#444",
     chatBox: "#ccc",
 }

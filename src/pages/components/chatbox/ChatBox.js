@@ -16,18 +16,15 @@ const ChatBox = ({ agent }) => {
     };
 
     const handleSendMessage = async (message) => {
-        // Display user message
         setMessages((prevMessages) => [
             ...prevMessages,
             { text: message, isUser: true }
         ]);
-        setTyping(true); // Show typing indicator while waiting for response from agent
+        setTyping(true);
 
         try {
-            // Fetch response from agent
             const response = await agent.sendMessage(message);
 
-            // Check if the response contains an error
             if (response.error) {
                 setAlert({
                     title: 'Error',
@@ -35,7 +32,6 @@ const ChatBox = ({ agent }) => {
                     onClose: () => setAlert(null)
                 });
             } else {
-                // Update messages if response is successful
                 setMessages([...agent.getMessages()]);
             }
         } catch (error) {
@@ -46,11 +42,10 @@ const ChatBox = ({ agent }) => {
                 onClose: () => setAlert(null)
             });
         } finally {
-            setTyping(false); // Hide typing indicator after receiving response
+            setTyping(false);
         }
     };
 
-    // Scroll to bottom whenever messages or typing state changes
     useEffect(() => {
         scrollToBottom();
     }, [messages, typing]);
@@ -61,12 +56,11 @@ const ChatBox = ({ agent }) => {
                 {messages.map((message, index) => (
                     <Message key={index} message={message.text} isUser={message.isUser} />
                 ))}
-                {typing && <TypingIndicator />} {/* Show typing indicator if typing */}
-                <div ref={messagesEndRef} style={styles.messagesEndSpacer} /> {/* Spacer */}
+                {typing && <TypingIndicator />}
+                <div ref={messagesEndRef} style={styles.messagesEndSpacer} />
             </div>
             <UserInput onSendMessage={handleSendMessage} />
 
-            {/* Display Alert if there is an error */}
             {alert && (
                 <Alert
                     title={alert.title}
@@ -78,12 +72,11 @@ const ChatBox = ({ agent }) => {
     );
 };
 
-// Inline styles
 const styles = {
     container: {
         maxWidth: '800px',
         width: '100%',
-        height: '600px',
+        height: 'calc(100vh - 110px)', // Adjust height to span from header to bottom
         border: `2px solid ${colors.chatBox}`,
         borderRadius: '10px',
         padding: '20px',
@@ -91,14 +84,15 @@ const styles = {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
+        backgroundColor: colors.background,
     },
     messages: {
-        height: 'calc(100% - 40px)',
+        flex: 1,
         overflowY: 'auto',
-        paddingBottom: '20px', // Adds space for the last message
+        paddingBottom: '20px',
     },
     messagesEndSpacer: {
-        height: '100px', // Same as the bottom padding of messages
+        height: '100px',
     },
 };
 
