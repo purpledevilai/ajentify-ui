@@ -1,46 +1,13 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Auth } from 'aws-amplify';
 import { colors } from './SharedStyles';
 import Button from './Button';
 import LoadingIndicator from './LoadingIndicator';
 import Alert from './Alert';
 
-const Sidebar = ({ agents, selectedAgent, setSelectedAgent, isSidebarOpen, setIsSidebarOpen, isMobile, onFinishConversation }) => {
-    const [chatHistory, setChatHistory] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+const Sidebar = ({ agents, selectedAgent, setSelectedAgent, isSidebarOpen, setIsSidebarOpen, isMobile, chatHistory, chatHistoryLoading, onFinishConversation }) => {
     const sidebarRef = useRef(null);
     const navigate = useNavigate();
-
-    useEffect(() => {
-        const fetchChatHistory = async () => {
-            setLoading(true); 
-            setError(null);   
-            try {
-                const response = await fetch('https://20yz4xw0ib.execute-api.ap-southeast-4.amazonaws.com/v1/chat-history', {
-                    headers: {
-                        Authorization: Auth.user.signInUserSession.accessToken.jwtToken,
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error("Failed to load chat history.");
-                }
-
-                const data = await response.json();
-                console.log('Chat history:', data);
-                setChatHistory(data.chat_history);
-            } catch (error) {
-                console.error("Error fetching chat history:", error);
-                setError(error.message); 
-            } finally {
-                setLoading(false); 
-            }
-        };
-
-        fetchChatHistory();
-    }, []);
 
     const handleAgentChange = (event) => {
         const agentName = event.target.value;
@@ -66,7 +33,7 @@ const Sidebar = ({ agents, selectedAgent, setSelectedAgent, isSidebarOpen, setIs
 
     const handleChatClick = (contextId) => {
         navigate(`/${contextId}`);
-        setIsSidebarOpen(false);
+        setIsSidebarOpen(false); // Close the sidebar on mobile after selection
     };
 
     return (
@@ -92,7 +59,7 @@ const Sidebar = ({ agents, selectedAgent, setSelectedAgent, isSidebarOpen, setIs
 
             <div style={styles.chatHistoryContainer}>
                 <h3 style={styles.chatHistoryTitle}>Chat History</h3>
-                {loading ? (
+                {chatHistoryLoading ? (
                     <LoadingIndicator />
                 ) : (
                     <ul style={styles.chatHistoryList}>
@@ -111,16 +78,8 @@ const Sidebar = ({ agents, selectedAgent, setSelectedAgent, isSidebarOpen, setIs
             </div>
 
             <Button onClick={onFinishConversation} style={styles.finishButton}>
-                Finish Conversation
+                Start New Conversation
             </Button>
-
-            {error && (
-                <Alert
-                    title="Error Loading Chat History"
-                    message={error}
-                    onClose={() => setError(null)}
-                />
-            )}
         </div>
     );
 };

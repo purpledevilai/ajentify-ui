@@ -7,14 +7,39 @@ import { useNavigate } from 'react-router-dom';
 import { useAppContext } from "../context/AppContext";
 import { colors } from './components/SharedStyles';
 import Alert from './components/Alert';
+import { use } from "marked";
 
 function HomePage() {
-  const { agents, setIsLoggedIn } = useAppContext();
+  const { agents, setIsLoggedIn, fetchChatHistory, chatHistoryLoading, chatHistoryError, chatHistory, setChatHistoryError } = useAppContext();
   const [alert, setAlert] = useState({ isOpen: false, title: '', message: '' });
   const [selectedAgent, setSelectedAgent] = useState(agents[0]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(true);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    console.log('Fetching chat history...');
+    fetchChatHistory();
+  }, [fetchChatHistory]);
+
+  useEffect(() => {
+    if (chatHistoryError) {
+      setAlert({
+        isOpen: true,
+        title: 'Error',
+        message: chatHistoryError,
+        onClose: () => setChatHistoryError(null),
+      });
+    }
+  }, [chatHistoryError, setChatHistoryError]);
+
+  useEffect(() => {
+    if (chatHistoryLoading) {
+      console.log('Loading chat history...');
+    } else {
+      console.log('Chat history loaded:', chatHistory);
+    }
+  }, [chatHistoryLoading, chatHistory]);
 
   useEffect(() => {
     // Check mobile status after component mounts
@@ -71,10 +96,11 @@ function HomePage() {
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
             isMobile={isMobile}
-            onFinishConversation={handleFinishConversation}
+            chatHistory={chatHistory}
+            chatHistoryLoading={chatHistoryLoading}
           />
         )}
-        
+
         <div style={styles.centeredChatContainer}>
           <ChatBox key={selectedAgent.getName()} agent={selectedAgent} />
         </div>
