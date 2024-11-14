@@ -22,6 +22,7 @@ const Header = ({ isMobile, onToggleSidebar, onLogout }) => (
 const styles = {
   header: {
     display: 'flex',
+    height: '70px',
     justifyContent: 'space-between',
     alignItems: 'center',
     width: '100%',

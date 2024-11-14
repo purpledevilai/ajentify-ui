@@ -13,13 +13,15 @@ function HomePage() {
   const [alert, setAlert] = useState({ isOpen: false, title: '', message: '' });
   const [selectedAgent, setSelectedAgent] = useState(agents[0]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const [isMobile, setIsMobile] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth <= 768);
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
+    // Check mobile status after component mounts
+    const checkMobileStatus = () => setIsMobile(window.innerWidth <= 768);
+    checkMobileStatus(); // Run on mount
+    window.addEventListener("resize", checkMobileStatus);
+    return () => window.removeEventListener("resize", checkMobileStatus);
   }, []);
 
   const handleLogout = async () => {
@@ -93,7 +95,10 @@ const styles = {
   appContainer: {
     display: 'flex',
     flexDirection: 'column',
+    width: '100vw',
     height: '100vh',
+    overflow: 'hidden',
+    position: 'relative',
     backgroundColor: colors.background,
     color: colors.text,
   },
@@ -101,6 +106,8 @@ const styles = {
     display: 'flex',
     flex: 1,
     width: '100%',
+    padding: '20px', // Consistent padding for outer container
+    boxSizing: 'border-box', // Ensures padding doesn't affect layout calculations
     overflow: 'hidden',
   },
   centeredChatContainer: {
@@ -108,7 +115,7 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     flex: 1,
-    padding: '20px',
+    height: '100%', // Fills remaining height in the outer content container
     boxSizing: 'border-box',
   },
 };

@@ -74,26 +74,25 @@ const ChatBox = ({ agent }) => {
 
 const styles = {
     container: {
-        maxWidth: '800px',
-        width: '100%',
-        height: 'calc(100vh - 110px)', // Adjust height to span from header to bottom
-        border: `2px solid ${colors.chatBox}`,
-        borderRadius: '10px',
-        padding: '20px',
-        position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        backgroundColor: colors.background,
+      maxWidth: '800px',
+      width: '100%',
+      height: '100%',
+      border: `2px solid ${colors.chatBox}`,
+      borderRadius: '10px',
+      position: 'relative',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+      backgroundColor: colors.background,
     },
     messages: {
-        flex: 1,
-        overflowY: 'auto',
-        paddingBottom: '20px',
+      flex: 1,
+      overflowY: 'auto',
+      paddingBottom: '20px',
     },
     messagesEndSpacer: {
-        height: '100px',
+      height: '100px',
     },
-};
+  };
 
 export default ChatBox;
