@@ -9,10 +9,15 @@ const ChatBox = ({ agent }) => {
     const [messages, setMessages] = useState(agent.getMessages());
     const [typing, setTyping] = useState(false);
     const [alert, setAlert] = useState(null);
-    const messagesEndRef = useRef(null);
+    const messagesRef = useRef(null); // Ref for the messages container
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        if (messagesRef.current) {
+            messagesRef.current.scrollTo({
+                top: messagesRef.current.scrollHeight,
+                behavior: "smooth"
+            });
+        }
     };
 
     const handleSendMessage = async (message) => {
@@ -52,12 +57,11 @@ const ChatBox = ({ agent }) => {
 
     return (
         <div style={styles.container}>
-            <div style={styles.messages}>
+            <div ref={messagesRef} style={styles.messages}>
                 {messages.map((message, index) => (
                     <Message key={index} message={message.text} isUser={message.isUser} />
                 ))}
                 {typing && <TypingIndicator />}
-                <div ref={messagesEndRef} style={styles.messagesEndSpacer} />
             </div>
             <UserInput onSendMessage={handleSendMessage} />
 
@@ -74,25 +78,24 @@ const ChatBox = ({ agent }) => {
 
 const styles = {
     container: {
-      maxWidth: '800px',
-      width: '100%',
-      height: '100%',
-      border: `2px solid ${colors.chatBox}`,
-      borderRadius: '10px',
-      position: 'relative',
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'space-between',
-      backgroundColor: colors.background,
+        maxWidth: '800px',
+        width: '100%',
+        height: '100%',
+        border: `2px solid ${colors.chatBox}`,
+        borderRadius: '10px',
+        position: 'relative',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between',
+        backgroundColor: colors.background,
     },
     messages: {
-      flex: 1,
-      overflowY: 'auto',
-      paddingBottom: '20px',
+        flex: 1,
+        overflowY: 'auto',
+        padding: '10px 20px',
+        paddingBottom: '150px',
+        boxSizing: 'border-box',
     },
-    messagesEndSpacer: {
-      height: '100px',
-    },
-  };
+};
 
 export default ChatBox;
