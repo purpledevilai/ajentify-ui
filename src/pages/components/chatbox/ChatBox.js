@@ -4,30 +4,33 @@ import TypingIndicator from './TypingIndicator';
 import UserInput from './UserInput';
 import Alert from '../Alert';
 import { colors } from '../SharedStyles';
+import { sendMessage } from '../../../lib/SendMessage';
 
-const ChatBox = ({ agent }) => {
-    const [messages, setMessages] = useState(agent.getMessages());
+const ChatBox = ({ context }) => {
+    const [messages, setMessages] = useState(context['messages']);
     const [typing, setTyping] = useState(false);
     const [alert, setAlert] = useState(null);
-    const messagesEndRef = useRef(null);
+    const messagesRef = useRef(null); // Ref for the messages container
 
     const scrollToBottom = () => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        if (messagesRef.current) {
+            messagesRef.current.scrollTo({
+                top: messagesRef.current.scrollHeight,
+                behavior: "smooth"
+            });
+        }
     };
 
     const handleSendMessage = async (message) => {
-        // Display user message
         setMessages((prevMessages) => [
             ...prevMessages,
-            { text: message, isUser: true }
+            { message: message, from: 'human' }
         ]);
-        setTyping(true); // Show typing indicator while waiting for response from agent
+        setTyping(true);
 
         try {
-            // Fetch response from agent
-            const response = await agent.sendMessage(message);
+            const response = await sendMessage(context['context_id'], message);
 
-            // Check if the response contains an error
             if (response.error) {
                 setAlert({
                     title: 'Error',
@@ -35,8 +38,10 @@ const ChatBox = ({ agent }) => {
                     onClose: () => setAlert(null)
                 });
             } else {
-                // Update messages if response is successful
-                setMessages([...agent.getMessages()]);
+                setMessages((prevMessages) => [
+                    ...prevMessages,
+                    { message: response.response, from: 'ai' }
+                ]);
             }
         } catch (error) {
             console.error('Error in sendMessage:', error);
@@ -46,27 +51,24 @@ const ChatBox = ({ agent }) => {
                 onClose: () => setAlert(null)
             });
         } finally {
-            setTyping(false); // Hide typing indicator after receiving response
+            setTyping(false);
         }
     };
 
-    // Scroll to bottom whenever messages or typing state changes
     useEffect(() => {
         scrollToBottom();
     }, [messages, typing]);
 
     return (
         <div style={styles.container}>
-            <div style={styles.messages}>
+            <div ref={messagesRef} style={styles.messages}>
                 {messages.map((message, index) => (
-                    <Message key={index} message={message.text} isUser={message.isUser} />
+                    <Message key={index} message={message.message} isUser={message.from === "human"} />
                 ))}
-                {typing && <TypingIndicator />} {/* Show typing indicator if typing */}
-                <div ref={messagesEndRef} style={styles.messagesEndSpacer} /> {/* Spacer */}
+                {typing && <TypingIndicator />}
             </div>
             <UserInput onSendMessage={handleSendMessage} />
 
-            {/* Display Alert if there is an error */}
             {alert && (
                 <Alert
                     title={alert.title}
@@ -78,27 +80,25 @@ const ChatBox = ({ agent }) => {
     );
 };
 
-// Inline styles
 const styles = {
     container: {
         maxWidth: '800px',
         width: '100%',
-        height: '600px',
+        height: '100%',
         border: `2px solid ${colors.chatBox}`,
         borderRadius: '10px',
-        padding: '20px',
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
+        backgroundColor: colors.background,
     },
     messages: {
-        height: 'calc(100% - 40px)',
+        flex: 1,
         overflowY: 'auto',
-        paddingBottom: '20px', // Adds space for the last message
-    },
-    messagesEndSpacer: {
-        height: '100px', // Same as the bottom padding of messages
+        padding: '10px 20px',
+        paddingBottom: '150px',
+        boxSizing: 'border-box',
     },
 };
 
