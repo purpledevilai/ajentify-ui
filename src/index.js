@@ -15,3 +15,13 @@ root.render(
 );
 
 reportWebVitals();
+
+const setViewportHeight = () => {
+  const viewportHeight = window.innerHeight; // Get the visible height
+  document.documentElement.style.setProperty('--available-height', `${viewportHeight}px`);
+};
+
+// Set the viewport height on page load and resize
+window.addEventListener('load', setViewportHeight);
+window.addEventListener('resize', setViewportHeight);
+
