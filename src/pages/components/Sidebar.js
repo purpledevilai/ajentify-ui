@@ -1,17 +1,14 @@
 import React, { useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { colors } from './SharedStyles';
 import Button from './Button';
 import LoadingIndicator from './LoadingIndicator';
-import Alert from './Alert';
 
-const Sidebar = ({ agents, selectedAgent, setSelectedAgent, isSidebarOpen, setIsSidebarOpen, isMobile, chatHistory, chatHistoryLoading, onFinishConversation }) => {
+const Sidebar = ({ agents, agentsLoading, selectedAgent, setSelectedAgent, isSidebarOpen, setIsSidebarOpen, isMobile, chatHistory, chatHistoryLoading, onStartConversation, onContextClicked }) => {
     const sidebarRef = useRef(null);
-    const navigate = useNavigate();
 
     const handleAgentChange = (event) => {
         const agentName = event.target.value;
-        const agent = agents.find((agent) => agent.getName() === agentName);
+        const agent = agents.find((agent) => agent.agent_name === agentName);
         if (agent) setSelectedAgent(agent);
     };
 
@@ -29,12 +26,17 @@ const Sidebar = ({ agents, selectedAgent, setSelectedAgent, isSidebarOpen, setIs
         }
 
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, [isMobile, isSidebarOpen]);
+    }, [isMobile, isSidebarOpen, setIsSidebarOpen]);
 
     const handleChatClick = (contextId) => {
-        navigate(`/${contextId}`);
-        setIsSidebarOpen(false); // Close the sidebar on mobile after selection
+        onContextClicked(contextId);
+        setIsSidebarOpen(false);
     };
+
+    const handleStartNewConversation = () => {
+        onStartConversation();
+        setIsSidebarOpen(false);
+    }
 
     return (
         <div
@@ -45,17 +47,25 @@ const Sidebar = ({ agents, selectedAgent, setSelectedAgent, isSidebarOpen, setIs
             }}
         >
             <label style={styles.label}>Select Agent:</label>
-            <select
-                value={selectedAgent.getName()}
-                onChange={handleAgentChange}
-                style={styles.dropdown}
-            >
-                {agents.map((agent) => (
-                    <option key={agent.getName()} value={agent.getName()}>
-                        {agent.getName()}
-                    </option>
-                ))}
-            </select>
+            {agentsLoading || !selectedAgent ? (
+                <LoadingIndicator />
+            ) : (
+                <select
+                    value={selectedAgent.agent_name}
+                    onChange={handleAgentChange}
+                    style={styles.dropdown}
+                >
+                    {agents.map((agent) => (
+                        <option key={agent.agent_name} value={agent.agent_name}>
+                            {agent.agent_name}
+                        </option>
+                    ))}
+                </select>
+            )}
+
+            <Button onClick={handleStartNewConversation} style={styles.finishButton}>
+                Start New Conversation
+            </Button>
 
             <div style={styles.chatHistoryContainer}>
                 <h3 style={styles.chatHistoryTitle}>Chat History</h3>
@@ -69,17 +79,13 @@ const Sidebar = ({ agents, selectedAgent, setSelectedAgent, isSidebarOpen, setIs
                                 style={styles.chatHistoryItem}
                                 onClick={() => handleChatClick(chat.context_id)}
                             >
-                                <div style={styles.chatTitle}>{chat.first_message}</div>
+                                <div style={styles.chatTitle}>{chat.title}</div>
                                 <div style={styles.contextId}>{chat.context_id}</div>
                             </li>
                         ))}
                     </ul>
                 )}
             </div>
-
-            <Button onClick={onFinishConversation} style={styles.finishButton}>
-                Start New Conversation
-            </Button>
         </div>
     );
 };
@@ -91,8 +97,8 @@ const styles = {
         flexDirection: 'column',
         alignItems: 'flex-start',
         width: '200px',
-        height: '100%', 
-        overflowY: 'auto', 
+        height: '100%',
+        overflowY: 'auto',
         padding: '20px',
         color: colors.text,
         zIndex: 10,
@@ -101,12 +107,12 @@ const styles = {
         position: 'absolute',
         top: 0,
         left: 0,
-        height: '100%', 
+        height: '100%',
         width: '200px',
         backgroundColor: colors.cardColor,
         zIndex: 20,
         boxShadow: '2px 0px 5px rgba(0,0,0,0.5)',
-        overflowY: 'auto', 
+        overflowY: 'auto',
     },
     nonMobileSidebar: {
         backgroundColor: 'transparent',

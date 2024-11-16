@@ -4,9 +4,10 @@ import TypingIndicator from './TypingIndicator';
 import UserInput from './UserInput';
 import Alert from '../Alert';
 import { colors } from '../SharedStyles';
+import { sendMessage } from '../../../lib/SendMessage';
 
-const ChatBox = ({ agent }) => {
-    const [messages, setMessages] = useState(agent.getMessages());
+const ChatBox = ({ context }) => {
+    const [messages, setMessages] = useState(context['messages']);
     const [typing, setTyping] = useState(false);
     const [alert, setAlert] = useState(null);
     const messagesRef = useRef(null); // Ref for the messages container
@@ -23,12 +24,12 @@ const ChatBox = ({ agent }) => {
     const handleSendMessage = async (message) => {
         setMessages((prevMessages) => [
             ...prevMessages,
-            { text: message, isUser: true }
+            { message: message, from: 'human' }
         ]);
         setTyping(true);
 
         try {
-            const response = await agent.sendMessage(message);
+            const response = await sendMessage(context['context_id'], message);
 
             if (response.error) {
                 setAlert({
@@ -37,7 +38,10 @@ const ChatBox = ({ agent }) => {
                     onClose: () => setAlert(null)
                 });
             } else {
-                setMessages([...agent.getMessages()]);
+                setMessages((prevMessages) => [
+                    ...prevMessages,
+                    { message: response.response, from: 'ai' }
+                ]);
             }
         } catch (error) {
             console.error('Error in sendMessage:', error);
@@ -59,7 +63,7 @@ const ChatBox = ({ agent }) => {
         <div style={styles.container}>
             <div ref={messagesRef} style={styles.messages}>
                 {messages.map((message, index) => (
-                    <Message key={index} message={message.text} isUser={message.isUser} />
+                    <Message key={index} message={message.message} isUser={message.from === "human"} />
                 ))}
                 {typing && <TypingIndicator />}
             </div>

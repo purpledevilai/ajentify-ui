@@ -11,24 +11,43 @@ import Button from './components/Button';
 import LoadingIndicator from './components/LoadingIndicator';
 
 function HomePage() {
-  const { 
-    agents,
+  const {
     setIsLoggedIn,
+    fetchAgents,
+    agents,
+    agentsLoading,
     fetchChatHistory,
     chatHistoryLoading,
     chatHistoryError,
     chatHistory,
-    setChatHistoryError
+    setChatHistoryError,
+    contextLoading,
+    currentContext,
+    fetchContext
   } = useAppContext();
   const [alert, setAlert] = useState({ isOpen: false, title: '', message: '' });
-  const [selectedAgent, setSelectedAgent] = useState(agents[0]);
+  const [selectedAgent, setSelectedAgent] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const navigate = useNavigate();
 
   useEffect(() => {
     fetchChatHistory();
-  }, [fetchChatHistory]);
+    fetchAgents();
+  }, [fetchChatHistory, fetchAgents]);
+
+  useEffect(() => {
+    if (chatHistory.length > 0) {
+      console.log('Fetching context here');
+      fetchContext(chatHistory[0].context_id);
+    }
+  }, [chatHistory, fetchContext]);
+
+  useEffect(() => {
+    if (agents.length > 0) {
+      setSelectedAgent(agents[0]);
+    }
+  }, [agents]);
 
   useEffect(() => {
     if (chatHistoryError) {
@@ -40,6 +59,10 @@ function HomePage() {
       });
     }
   }, [chatHistoryError, setChatHistoryError]);
+
+  const onContextClicked = async (contextId) => {
+    await fetchContext(contextId);
+  };
 
   const checkMobileStatus = () => {
     setIsMobile(window.innerWidth <= 768);
@@ -73,16 +96,10 @@ function HomePage() {
     setIsSidebarOpen(!isSidebarOpen);
   };
 
-  const handleStartConversation = () => {
-    console.log(`Starting conversation with ${selectedAgent.getName()}`);
-  };
-
-  const handleFinishConversation = () => {
-    setAlert({
-      isOpen: true,
-      title: 'Not Implemented Yet',
-      message: 'This will trigger the agent to remember this conversation.',
-    });
+  const handleStartConversation = async () => {
+    console.log(`Starting conversation with ${selectedAgent.agent_name}`);
+    await fetchContext()
+    fetchChatHistory();
   };
 
   return (
@@ -97,6 +114,7 @@ function HomePage() {
         {(isSidebarOpen || !isMobile) && (
           <Sidebar
             agents={agents}
+            agentsLoading={agentsLoading}
             selectedAgent={selectedAgent}
             setSelectedAgent={setSelectedAgent}
             isSidebarOpen={isSidebarOpen}
@@ -104,26 +122,28 @@ function HomePage() {
             isMobile={isMobile}
             chatHistory={chatHistory}
             chatHistoryLoading={chatHistoryLoading}
+            onContextClicked={onContextClicked}
+            onStartConversation={handleStartConversation}
           />
         )}
 
         <div style={styles.centeredChatContainer}>
-          {chatHistoryLoading ? (
+          {!chatHistory || chatHistoryLoading || !agents || agentsLoading || !selectedAgent ? (
             <LoadingIndicator />
           ) : chatHistory.length === 0 ? (
             <div style={styles.newConversationContainer}>
               <label style={styles.label}>Select Agent:</label>
               <select
-                value={selectedAgent.getName()}
+                value={selectedAgent.agent_name}
                 onChange={(e) => {
-                  const agent = agents.find(a => a.getName() === e.target.value);
+                  const agent = agents.find(a => a.agent_name === e.target.value);
                   setSelectedAgent(agent);
                 }}
                 style={styles.dropdown}
               >
                 {agents.map((agent) => (
-                  <option key={agent.getName()} value={agent.getName()}>
-                    {agent.getName()}
+                  <option key={agent.agent_name} value={agent.agent_name}>
+                    {agent.agent_name}
                   </option>
                 ))}
               </select>
@@ -131,8 +151,10 @@ function HomePage() {
                 Start Conversation
               </Button>
             </div>
+          ) : !currentContext || contextLoading ? (
+            <LoadingIndicator />
           ) : (
-            <ChatBox key={selectedAgent.getName()} agent={selectedAgent} />
+            <ChatBox key={currentContext.context_id} context={currentContext} />
           )}
         </div>
       </div>
@@ -166,7 +188,7 @@ const styles = {
     padding: '20px',
     boxSizing: 'border-box',
     overflow: 'hidden',
-    minHeight: 'calc(100vh - 60px)', // Ensures outer container doesn't collapse and remains under header
+    minHeight: 'calc(100vh - 60px)',
   },
   centeredChatContainer: {
     display: 'flex',
