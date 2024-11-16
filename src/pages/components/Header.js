@@ -38,6 +38,7 @@ const styles = {
   hamburger: {
     fontSize: '1.5rem',
     background: 'none',
+    color: colors.primary,
     border: 'none',
     cursor: 'pointer',
     marginRight: '10px',

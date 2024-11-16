@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import ChatBox from "./components/chatbox/ChatBox";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
@@ -12,7 +12,6 @@ import LoadingIndicator from './components/LoadingIndicator';
 
 function HomePage() {
   const {
-    setIsLoggedIn,
     fetchAgents,
     agents,
     agentsLoading,
@@ -23,22 +22,26 @@ function HomePage() {
     setChatHistoryError,
     contextLoading,
     currentContext,
-    fetchContext
+    fetchContext,
+    resetContext
   } = useAppContext();
   const [alert, setAlert] = useState({ isOpen: false, title: '', message: '' });
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const startedInitalLoadRef = useRef(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchChatHistory();
-    fetchAgents();
+    if (!startedInitalLoadRef.current) {
+      startedInitalLoadRef.current = true;
+      fetchChatHistory();
+      fetchAgents();
+    }
   }, [fetchChatHistory, fetchAgents]);
 
   useEffect(() => {
     if (chatHistory.length > 0) {
-      console.log('Fetching context here');
       fetchContext(chatHistory[0].context_id);
     }
   }, [chatHistory, fetchContext]);
@@ -77,7 +80,7 @@ function HomePage() {
   const handleLogout = async () => {
     try {
       await Auth.signOut();
-      setIsLoggedIn(false);
+      resetContext();
       navigate('/login');
     } catch (error) {
       setAlert({
@@ -143,7 +146,7 @@ function HomePage() {
               >
                 {agents.map((agent) => (
                   <option key={agent.agent_name} value={agent.agent_name}>
-                    {agent.agent_name}
+                    {agent.agent_name} {agent.agent_description ? ` - ${agent.agent_description}` : ''}
                   </option>
                 ))}
               </select>

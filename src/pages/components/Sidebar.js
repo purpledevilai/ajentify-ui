@@ -57,7 +57,7 @@ const Sidebar = ({ agents, agentsLoading, selectedAgent, setSelectedAgent, isSid
                 >
                     {agents.map((agent) => (
                         <option key={agent.agent_name} value={agent.agent_name}>
-                            {agent.agent_name}
+                            {agent.agent_name} {agent.agent_description ? ` - ${agent.agent_description}` : ''}
                         </option>
                     ))}
                 </select>
