@@ -12,6 +12,7 @@ const SendButton = ({ onClick }) => {
 const styles = {
     button: {
         backgroundColor: 'transparent',
+        color: 'black',
         border: 'none',
         outline: 'none',
         cursor: 'pointer',

@@ -18,6 +18,19 @@ export const AppContextProvider = ({ children }) => {
     const [contextLoading, setContextLoading] = useState(false);
     const [contextError, setContextError] = useState(null);
 
+    const resetContext = () => {
+        setIsLoggedIn(false);
+        setAgents([]);
+        setAgentsLoading(false);
+        setAgentsError(null);
+        setChatHistory([]);
+        setChatHistoryLoading(false);
+        setChatHistoryError(null);
+        setCurrentContext(null);
+        setContextLoading(false);
+        setContextError(null);
+    };
+
     const fetchAgents = useCallback(async () => {
         setAgentsLoading(true);
         setAgentsError(null);
@@ -97,6 +110,7 @@ export const AppContextProvider = ({ children }) => {
             currentContext,
             contextLoading,
             contextError,
+            resetContext
         }}>
             {children}
         </AppContext.Provider>
