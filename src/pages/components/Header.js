@@ -1,22 +1,40 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import Button from './Button';
 import { colors } from './SharedStyles';
+import { useLogout } from "../../hooks/useLogout";
+import { useAlert } from '../../hooks/useAlert';
 
-const Header = ({ isMobile, onToggleSidebar, onLogout }) => (
-  <header style={styles.header}>
-    <div style={styles.headerLeft}>
-      {isMobile && (
-        <button style={styles.hamburger} onClick={onToggleSidebar}>
-          ☰
-        </button>
-      )}
-      <h1 style={styles.title}>Ajentify</h1>
-    </div>
-    <Button onClick={onLogout} style={styles.logoutButton}>
-      Logout
-    </Button>
-  </header>
-);
+const Header = ({ isMobile, onToggleSidebar }) => {
+
+  const { logout, loading: logoutLoading, error: logoutError, clearError: clearLogoutError} = useLogout();
+  const showAlert = useAlert();
+
+  useEffect(() => {
+    if (logoutError) {
+      showAlert({
+        title: "Error",
+        message: logoutError,
+        onClose: clearLogoutError,
+      })
+    }
+  }, [logoutError])
+
+  return (
+    <header style={styles.header}>
+      <div style={styles.headerLeft}>
+        {isMobile && (
+          <button style={styles.hamburger} onClick={onToggleSidebar}>
+            ☰
+          </button>
+        )}
+        <h1 style={styles.title}>Ajentify</h1>
+      </div>
+      <Button onClick={logout} isLoading={logoutLoading} style={styles.logoutButton}>
+        Logout
+      </Button>
+    </header>
+  )
+};
 
 // Header styles
 const styles = {

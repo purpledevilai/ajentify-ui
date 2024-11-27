@@ -77,20 +77,6 @@ function HomePage() {
     return () => window.removeEventListener("resize", checkMobileStatus);
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await Auth.signOut();
-      resetContext();
-      navigate('/login');
-    } catch (error) {
-      setAlert({
-        isOpen: true,
-        title: 'Logout Failed',
-        message: error.message || 'An unknown error occurred. Please try again.',
-      });
-    }
-  };
-
   const closeAlert = () => {
     setAlert({ isOpen: false, title: '', message: '' });
   };
@@ -110,7 +96,6 @@ function HomePage() {
       <Header
         isMobile={isMobile}
         onToggleSidebar={toggleSidebar}
-        onLogout={handleLogout}
       />
 
       <div style={styles.outerContentContainer}>

@@ -4,7 +4,6 @@ import { useNavigate } from 'react-router-dom';
 import { colors } from './components/SharedStyles';
 import Alert from './components/Alert';
 import Button from './components/Button';
-import { useAppContext } from '../context/AppContext';
 
 function LoginPage() {
   const [email, setEmail] = useState('');
@@ -12,16 +11,13 @@ function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [alert, setAlert] = useState({ isOpen: false, title: '', message: '' });
   const navigate = useNavigate();
-  const { setIsLoggedIn } = useAppContext();
 
   const handleLogin = async () => {
     try {
       setIsLoading(true);
       await Auth.signIn(email, password);
-      setIsLoggedIn(true)
       navigate('/');
     } catch (error) {
-      setIsLoggedIn(false)
       setAlert({
         isOpen: true,
         title: 'Login Failed',
@@ -96,7 +92,7 @@ const styles = {
     alignItems: 'center',
   },
   input: {
-    width: '100%', // Full width within the container
+    width: '100%',
     padding: '10px',
     margin: '10px 0',
     fontSize: '1rem',
@@ -105,7 +101,7 @@ const styles = {
     boxSizing: 'border-box',
   },
   button: {
-    width: '100%', // Full width within the container
+    width: '100%',
     padding: '10px',
     margin: '10px 0',
     fontSize: '1rem',

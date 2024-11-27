@@ -16,7 +16,7 @@ Amplify.configure({
 });
 
 function App() {
-  const [loading, setLoading] = useState(true); // Loading state for initial auth check
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -36,7 +36,7 @@ function App() {
         }
       })
       .finally(() => {
-        setLoading(false); // Mark loading as complete
+        setLoading(false);
       });
   }, [navigate, location.pathname]);
 
@@ -79,7 +79,7 @@ function App() {
   );
 }
 
-// Wrapper for Router
+// Wrapper for Router - So you can use navigate in app
 export default function AppWithRouter() {
   return (
     <Router>
@@ -95,7 +95,7 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     height: '100vh',
-    backgroundColor: colors.background, // Set background color from shared styles
+    backgroundColor: colors.background,
   },
   spinner: {
     width: '50px',
@@ -107,13 +107,11 @@ const styles = {
   },
 };
 
-// Keyframes for spinner animation
 const keyframes = `
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }`;
 
-// Inject the keyframes into the document
 const styleSheet = document.styleSheets[0];
 styleSheet.insertRule(keyframes, styleSheet.cssRules.length);
