@@ -4,52 +4,62 @@ import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import HomePage from './pages/HomePage';
-import { Amplify, Auth } from 'aws-amplify';
-import { useAppContext } from './context/AppContext';
+import { Amplify, Auth, Hub } from 'aws-amplify';
 import { colors } from './pages/components/SharedStyles';
 
 Amplify.configure({
   Auth: {
-    region: "ap-southeast-4",
-    userPoolId: "ap-southeast-4_NafqYoG7v",
-    userPoolWebClientId: "204io607m870s4g626vnm6viqq"
+    region: process.env.REACT_APP_AWS_REGION,
+    userPoolId: process.env.REACT_APP_AWS_USER_POOL_ID,
+    userPoolWebClientId: process.env.REACT_APP_AWS_USER_POOL_WEB_CLIENT_ID,
   }
 });
 
 function App() {
-  const { isLoggedIn, setIsLoggedIn } = useAppContext();
-  const [loading, setLoading] = useState(true); // Loading state for initial check
+  const [loading, setLoading] = useState(true); // Loading state for initial auth check
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    checkAuth();
-  });
+    // Initial authentication check
+    Auth.currentAuthenticatedUser()
+      .then(() => {
+        console.log("User is logged in");
+        if (location.pathname === '/login' || location.pathname === '/signup') {
+          navigate('/');
+        }
+      })
+      .catch(() => {
+        console.log("User is not logged in");
+        if (location.pathname !== '/login' && location.pathname !== '/signup') {
+          navigate('/login');
+        }
+      })
+      .finally(() => {
+        setLoading(false); // Mark loading as complete
+      });
+  }, [navigate, location.pathname]);
 
+  // Listen for Amplify Hub events
   useEffect(() => {
-    if (!loading) {
-      // Redirect based on authentication status
-      if (isLoggedIn) {
+    const handleAuthEvents = (data) => {
+      const { event } = data.payload;
+      if (event === 'signIn') {
+        console.log("User signed in");
         navigate('/');
-      } else if (location.pathname === '/') {
+      } else if (event === 'signOut') {
+        console.log("User signed out");
         navigate('/login');
       }
-    }
-  }, [isLoggedIn, loading, navigate, location.pathname]);
+    };
 
-  const checkAuth = async () => {
-    try {
-      await Auth.currentAuthenticatedUser();
-      setIsLoggedIn(true);
-      console.log("User is logged in");
-      console.log(`access token: ${Auth.user.signInUserSession.accessToken.jwtToken ?? 'undefined'}`);
-    } catch (error) {
-      setIsLoggedIn(false);
-      console.log("User is not logged in");
-    } finally {
-      setLoading(false); // Mark loading as complete once authentication is checked
-    }
-  };
+    Hub.listen('auth', handleAuthEvents);
+
+    // Cleanup the listener on component unmount
+    return () => {
+      Hub.remove('auth', handleAuthEvents);
+    };
+  }, [navigate]);
 
   // Show a loading spinner while checking authentication status
   if (loading) {
