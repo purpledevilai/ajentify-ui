@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { colors } from './components/SharedStyles';
 import Alert from './components/Alert';
 import Button from './components/Button';
+import {createUser, createOrganization } from "../lib/API"
 
 function SignUpPage() {
   const [firstName, setFirstName] = useState('');
@@ -60,30 +61,70 @@ function SignUpPage() {
     try {
       setIsLoading(true);
       await Auth.confirmSignUp(email, verificationCode);
-
+  
+      // Automatically log in the user after verification
+      const user = await Auth.signIn(email, password);
+      
+      // Create the user
+      await createUser(user.attributes.sub);
+  
+      // Make API calls after login
+      if (isCreatingOrg) {
+        await createOrganization(organizationName);
+      } else {
+        //await processInvitation(accessToken);
+      }
+  
       // Show success alert with redirection action
       setAlert({
         isOpen: true,
-        title: 'Verification Successful',
-        message: 'Your account has been verified. Please log in.',
+        title: 'Setup Successful',
+        message: 'Your account and organization have been set up.',
         actions: [
           {
-            label: 'Go to Login',
-            handler: () => navigate('/login'),
+            label: 'Go to Home',
+            handler: () => navigate('/'),
           },
         ],
-        close: () => navigate('/login')
+        close: () => navigate('/'),
       });
       setShowVerificationModal(false); // Hide the verification modal
     } catch (error) {
       setAlert({
         isOpen: true,
         title: 'Verification Failed',
-        message: error.message || 'Invalid verification code. Please try again.',
+        message: error.message || 'Something went wrong. Please try again.',
         actions: [{ label: 'Ok', handler: closeAlert }],
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+  
+  // Process invitation API call
+  const processInvitation = async (accessToken) => {
+    try {
+      const response = await fetch('https://api.example.com/invitation', {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          invitationCode,
+          email,
+          firstName,
+          lastName,
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to process invitation.');
+      }
+  
+      console.log('Invitation processed successfully');
+    } catch (error) {
+      throw new Error(`Invitation processing failed: ${error.message}`);
     }
   };
 
