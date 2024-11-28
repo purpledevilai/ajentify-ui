@@ -1,36 +1,26 @@
-import React, { useState } from 'react';
-import { Auth } from 'aws-amplify';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { colors } from './components/SharedStyles';
-import Alert from './components/Alert';
+import { useLogin } from '../hooks/useLogin';
+import { useAlert } from '../hooks/useAlert';
 import Button from './components/Button';
 
 function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [alert, setAlert] = useState({ isOpen: false, title: '', message: '' });
+  const { login, loading: loginLoading, error: loginError, clearError: clearLoginError } = useLogin();
+  const showAlert = useAlert();
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
-    try {
-      setIsLoading(true);
-      await Auth.signIn(email, password);
-      navigate('/');
-    } catch (error) {
-      setAlert({
-        isOpen: true,
-        title: 'Login Failed',
-        message: error.message || 'An unknown error occurred. Please try again.',
+  useEffect(() => {
+    if (loginError) {
+      showAlert({
+        title: 'Error',
+        message: loginError,
+        onClose: clearLoginError,
       });
-    } finally {
-      setIsLoading(false);
     }
-  };
-
-  const closeAlert = () => {
-    setAlert({ isOpen: false, title: '', message: '' });
-  };
+  }, [loginError]);
 
   return (
     <div style={styles.authContainer}>
@@ -50,21 +40,13 @@ function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           style={styles.input}
         />
-        <Button onClick={handleLogin} style={styles.button} isLoading={isLoading}>
+        <Button onClick={() => login(email, password)} style={styles.button} isLoading={loginLoading}>
           Login
         </Button>
         <Button onClick={() => navigate('/signup')} style={{ ...styles.button, ...styles.secondaryButton }}>
           Create Account
         </Button>
       </div>
-
-      {alert.isOpen && (
-        <Alert
-          title={alert.title}
-          message={alert.message}
-          onClose={closeAlert}
-        />
-      )}
     </div>
   );
 }

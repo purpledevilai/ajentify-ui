@@ -2,18 +2,18 @@ import { useState, useCallback } from "react";
 import { useNavigate } from 'react-router-dom';
 import { Auth } from 'aws-amplify';
 
-export const useLogout = () => {
+export const useLogin = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const navigate = useNavigate();
 
-    const logout = useCallback(
-        async () => {
+    const login = useCallback(
+        async (email, password) => {
             try {
                 setLoading(true);
                 setError(null);
-                await Auth.signOut();
-                navigate('/login');
+                await Auth.signIn(email, password);
+                navigate('/');
             } catch (error) {
                 setError(error.message || 'An unknown error occurred. Please try again.');
             } finally {
@@ -28,7 +28,7 @@ export const useLogout = () => {
     }, []);
 
     return {
-        logout,
+        login,
         loading,
         error,
         clearError,
