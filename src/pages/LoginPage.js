@@ -8,19 +8,21 @@ import Button from './components/Button';
 function LoginPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const { login, loading: loginLoading, error: loginError, clearError: clearLoginError } = useLogin();
+  const { login, loading: loginLoading } = useLogin();
   const showAlert = useAlert();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    if (loginError) {
+  const handleLogin = async () => {
+    try {
+      await login({ email, password });
+      navigate('/');
+    } catch (error) {
       showAlert({
         title: 'Error',
-        message: loginError,
-        onClose: clearLoginError,
+        message: error.message,
       });
     }
-  }, [loginError]);
+  };
 
   return (
     <div style={styles.authContainer}>
@@ -40,7 +42,7 @@ function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           style={styles.input}
         />
-        <Button onClick={() => login(email, password)} style={styles.button} isLoading={loginLoading}>
+        <Button onClick={handleLogin} style={styles.button} isLoading={loginLoading}>
           Login
         </Button>
         <Button onClick={() => navigate('/signup')} style={{ ...styles.button, ...styles.secondaryButton }}>

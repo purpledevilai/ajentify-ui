@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Button from './Button';
 import { colors } from './SharedStyles';
 import { useLogout } from "../../hooks/useLogout";
@@ -6,18 +7,21 @@ import { useAlert } from '../../hooks/useAlert';
 
 const Header = ({ isMobile, onToggleSidebar }) => {
 
-  const { logout, loading: logoutLoading, error: logoutError, clearError: clearLogoutError} = useLogout();
+  const { logout, loading: logoutLoading} = useLogout();
+  const navigate = useNavigate();
   const showAlert = useAlert();
 
-  useEffect(() => {
-    if (logoutError) {
+  const handleLogout = async () => {
+    try {
+      await logout();
+      navigate('/login');
+    } catch (error) {
       showAlert({
         title: "Error",
-        message: logoutError,
-        onClose: clearLogoutError,
-      })
+        message: error.message || "An unknown error occurred. Please try again.",
+      });
     }
-  }, [logoutError])
+  };
 
   return (
     <header style={styles.header}>
@@ -29,7 +33,7 @@ const Header = ({ isMobile, onToggleSidebar }) => {
         )}
         <h1 style={styles.title}>Ajentify</h1>
       </div>
-      <Button onClick={logout} isLoading={logoutLoading} style={styles.logoutButton}>
+      <Button onClick={handleLogout} isLoading={logoutLoading} style={styles.logoutButton}>
         Logout
       </Button>
     </header>

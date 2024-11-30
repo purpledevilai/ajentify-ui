@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { Auth } from 'aws-amplify';
 import { useNavigate } from 'react-router-dom';
 import { colors } from './components/SharedStyles';
-import Alert from './components/Alert';
+import { useAlert } from '../hooks/useAlert';
 import Button from './components/Button';
-import {createUser, createOrganization } from "../lib/API"
+import { useSignUp } from "../hooks/useSignUp";
+import { useConfirmSignUp } from '../hooks/useConfirmSignUp';
+import { useLogin } from '../hooks/useLogin';
+import { useCreateUser } from '../hooks/useCreateUser';
+import { useCreateOrganization } from '../hooks/useCreateOrganization';
 
 function SignUpPage() {
   const [firstName, setFirstName] = useState('');
@@ -15,69 +18,60 @@ function SignUpPage() {
   const [isCreatingOrg, setIsCreatingOrg] = useState(false);
   const [organizationName, setOrganizationName] = useState('');
   const [invitationCode, setInvitationCode] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const [alert, setAlert] = useState({ isOpen: false, title: '', message: '', actions: undefined, close: undefined });
   const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [verificationCode, setVerificationCode] = useState('');
+
+  const showAlert = useAlert();
+  const { signUp, loading: signUpLoading } = useSignUp();
+  const { confirmSignUp, loading: confirmSignUpLoading } = useConfirmSignUp();
+  const { login, loading: loginLoading } = useLogin();
+  const { createUser, loading: createUserLoading } = useCreateUser();
+  const { createOrganization, loading: createOrganizationLoading } = useCreateOrganization();
+
   const navigate = useNavigate();
 
   const handleSignUp = async () => {
+    // Passwords match
     if (password !== confirmPassword) {
-      setAlert({
-        isOpen: true,
-        title: 'Sign Up Failed',
-        message: 'Passwords do not match. Please try again.',
-        actions: [{ label: 'Ok', handler: closeAlert }],
-        close: closeAlert,
+      showAlert({
+        title: "Whoops!",
+        message: "Passwords do not match. Please try again.",
       });
       return;
     }
     try {
-      setIsLoading(true);
-      await Auth.signUp({
-        username: email,
-        password,
-        attributes: {
-          email,
-          given_name: firstName,
-          family_name: lastName,
-        },
-      });
-      setShowVerificationModal(true); // Show modal to enter verification code
+      // Sign Up
+      await signUp({ email, password, firstName, lastName });
+      setShowVerificationModal(true);
     } catch (error) {
-      setAlert({
-        isOpen: true,
+      showAlert({
         title: 'Sign Up Failed',
-        message: error.message || 'An unknown error occurred. Please try again.',
-        actions: [{ label: 'Ok', handler: closeAlert }],
-        close: closeAlert
-      });
-    } finally {
-      setIsLoading(false);
+        message: error.message,
+      })
     }
   };
 
   const handleVerifyCode = async () => {
     try {
-      setIsLoading(true);
-      await Auth.confirmSignUp(email, verificationCode);
-  
-      // Automatically log in the user after verification
-      const user = await Auth.signIn(email, password);
-      
+      // Confirm Sign Up
+      await confirmSignUp({ email, verificationCode });
+
+      // Login
+      await login({ email, password });
+
       // Create the user
-      await createUser(user.attributes.sub);
-  
-      // Make API calls after login
+      await createUser();
+
       if (isCreatingOrg) {
-        await createOrganization(organizationName);
+        // Create the org
+        await createOrganization({ organizationName });
       } else {
         //await processInvitation(accessToken);
       }
-  
-      // Show success alert with redirection action
-      setAlert({
-        isOpen: true,
+
+      // Success!
+      setShowVerificationModal(false);
+      showAlert({
         title: 'Setup Successful',
         message: 'Your account and organization have been set up.',
         actions: [
@@ -86,50 +80,14 @@ function SignUpPage() {
             handler: () => navigate('/'),
           },
         ],
-        close: () => navigate('/'),
+        onClose: () => navigate('/'),
       });
-      setShowVerificationModal(false); // Hide the verification modal
     } catch (error) {
-      setAlert({
-        isOpen: true,
+      showAlert({
         title: 'Verification Failed',
-        message: error.message || 'Something went wrong. Please try again.',
-        actions: [{ label: 'Ok', handler: closeAlert }],
-      });
-    } finally {
-      setIsLoading(false);
+        message: error.message
+      })
     }
-  };
-  
-  // Process invitation API call
-  const processInvitation = async (accessToken) => {
-    try {
-      const response = await fetch('https://api.example.com/invitation', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          invitationCode,
-          email,
-          firstName,
-          lastName,
-        }),
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to process invitation.');
-      }
-  
-      console.log('Invitation processed successfully');
-    } catch (error) {
-      throw new Error(`Invitation processing failed: ${error.message}`);
-    }
-  };
-
-  const closeAlert = () => {
-    setAlert({ isOpen: false, title: '', message: '', actions: [], close: closeAlert });
   };
 
   return (
@@ -202,19 +160,10 @@ function SignUpPage() {
             style={styles.input}
           />
         )}
-        <Button onClick={handleSignUp} style={styles.button} isLoading={isLoading}>
+        <Button onClick={handleSignUp} style={styles.button} isLoading={signUpLoading}>
           Create Account
         </Button>
       </div>
-
-      {alert.isOpen && (
-        <Alert
-          title={alert.title}
-          message={alert.message}
-          actions={alert.actions}
-          onClose={alert.close}
-        />
-      )}
 
       {showVerificationModal && (
         <div style={styles.modalOverlay}>
@@ -230,7 +179,7 @@ function SignUpPage() {
               onChange={(e) => setVerificationCode(e.target.value)}
               style={styles.input}
             />
-            <Button onClick={handleVerifyCode} style={styles.button} isLoading={isLoading}>
+            <Button onClick={handleVerifyCode} style={styles.button} isLoading={confirmSignUpLoading || loginLoading || createUserLoading || createOrganizationLoading}>
               Verify
             </Button>
           </div>

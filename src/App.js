@@ -46,7 +46,9 @@ function App() {
       const { event } = data.payload;
       if (event === 'signIn') {
         console.log("User signed in");
-        navigate('/');
+        if (location.pathname !== '/signup') { // When we sign in for user creation, we don't want to redirect
+          navigate('/');
+        }
       } else if (event === 'signOut') {
         console.log("User signed out");
         navigate('/login');

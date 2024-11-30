@@ -1,14 +1,22 @@
 import { useState, useCallback } from "react";
 import { Auth } from 'aws-amplify';
 
-export const useLogout = () => {
+export const useSignUp = () => {
     const [loading, setLoading] = useState(false);
 
-    const logout = useCallback(
-        async () => {
+    const signUp = useCallback(
+        async ({ email, password, firstName, lastName }) => {
             try {
                 setLoading(true);
-                await Auth.signOut();
+                return await Auth.signUp({
+                    username: email,
+                    password,
+                    attributes: {
+                        email,
+                        given_name: firstName,
+                        family_name: lastName,
+                    },
+                });
             } catch (error) {
                 const errorMessage = error.message || 'An unknown error occurred. Please try again.';
                 throw Error(errorMessage);
@@ -20,7 +28,7 @@ export const useLogout = () => {
     );
 
     return {
-        logout,
+        signUp,
         loading,
     };
 };
