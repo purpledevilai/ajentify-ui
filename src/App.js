@@ -5,6 +5,7 @@ import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import HomePage from './pages/HomePage';
 import ChatPage from './pages/ChatPage';
+import CreateAgentPage from './pages/CreateAgentPage';
 import { Amplify, Auth, Hub } from 'aws-amplify';
 import { colors } from './pages/components/SharedStyles';
 
@@ -78,6 +79,7 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/" element={<HomePage />} />
+      <Route path="/create-agent" element={<CreateAgentPage />} />
     </Routes>
   );
 }

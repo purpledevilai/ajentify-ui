@@ -17,7 +17,7 @@ const styles = {
         flexDirection: 'column',
         backgroundColor: colors.background,
         color: colors.text,
-        overflow: 'hidden',
+        overflow: 'auto',
         position: 'fixed',
     },
 };
