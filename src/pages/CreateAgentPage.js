@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { colors } from './components/SharedStyles';
 import AppPage from './components/AppPage';
 import Header from './components/Header';
+import Button from './components/Button';
 import ChatBox from './components/chatbox/ChatBox';
 import { useAlert } from '../hooks/useAlert';
 import { useCreateContext } from '../hooks/useCreateContext';
@@ -32,6 +33,14 @@ const CreateAgentPage = () => {
         }
 
     }, [contextError, clearContextError]);
+
+    const onUIUpdate = (uiUpdates) => {
+        for (const update of uiUpdates) {
+            if (update.type === 'set_prompt') {
+                setAgentPrompt(update.prompt);
+            }
+        }
+    };
 
 
     const createAgent = async () => {
@@ -66,16 +75,13 @@ const CreateAgentPage = () => {
                                 <LoadingShimmerBox height={600} />
                             ) : (
                                 currentContext && (
-                                    <ChatBox key={currentContext.context_id} context={currentContext} />
+                                    <ChatBox key={currentContext.context_id} context={currentContext} onUIUpdate={onUIUpdate}/>
                                 )
                             )}
                         </div>
                     </div>
                 </div>
-
-                <button style={styles.createAgentButton} onClick={createAgent} disabled={loading}>
-                    {loading ? 'Creating Agent...' : 'Create Agent'}
-                </button>
+                <Button style={styles.createAgentButton}>Create Agent</Button>
             </div>
         </AppPage>
 
@@ -85,6 +91,10 @@ const CreateAgentPage = () => {
 const styles = {
     createAgentContainer: {
         padding: '40px 20px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '20px', // Space between stacked items
+        minHeight: '100%', // Ensures the container occupies at least the full viewport height
     },
     backButton: {
         position: 'absolute',
@@ -116,7 +126,8 @@ const styles = {
         display: 'flex',
         flexDirection: 'row',
         gap: '20px',
-        height: '600px',
+        height: '600px', // Fixed height
+        flexShrink: 0, // Prevent shrinking, ensures this container keeps its height
     },
     promptInputContainer: {
         flex: '1',
@@ -136,11 +147,11 @@ const styles = {
     },
     createAgentButton: {
         padding: '10px',
-        backgroundColor: '#007bff',
+        width: '100%',
         color: 'white',
         border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
+        alignSelf: 'center', // Center the button horizontally
+        marginTop: '40px', // Add space above the button
     },
 };
 

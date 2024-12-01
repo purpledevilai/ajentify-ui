@@ -6,7 +6,7 @@ import Alert from '../Alert';
 import { colors } from '../SharedStyles';
 import { sendMessage } from '../../../lib/SendMessage';
 
-const ChatBox = ({ context }) => {
+const ChatBox = ({ context, onUIUpdate = null }) => {
     const [messages, setMessages] = useState(context['messages']);
     const [typing, setTyping] = useState(false);
     const [alert, setAlert] = useState(null);
@@ -42,6 +42,9 @@ const ChatBox = ({ context }) => {
                     ...prevMessages,
                     { message: response.response, from: 'ai' }
                 ]);
+                if (response.ui_updates && onUIUpdate) {
+                    onUIUpdate(response.ui_updates);
+                }
             }
         } catch (error) {
             console.error('Error in sendMessage:', error);
