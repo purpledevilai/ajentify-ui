@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { colors } from './components/SharedStyles';
 import { useAlert } from '../hooks/useAlert';
+import AppPage from './components/AppPage';
 import Button from './components/Button';
 import { useSignUp } from "../hooks/useSignUp";
 import { useConfirmSignUp } from '../hooks/useConfirmSignUp';
@@ -91,7 +92,7 @@ function SignUpPage() {
   };
 
   return (
-    <div style={styles.authContainer}>
+    <AppPage style={styles.authContainer}>
       <button onClick={() => navigate(-1)} style={styles.backButton}>
         &#8592; Back
       </button>
@@ -185,19 +186,15 @@ function SignUpPage() {
           </div>
         </div>
       )}
-    </div>
+    </AppPage>
   );
 }
 
 const styles = {
   authContainer: {
     position: 'relative',
-    display: 'flex',
-    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100vh',
-    backgroundColor: colors.background,
     color: colors.text,
   },
   backButton: {

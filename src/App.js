@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from
 import LoginPage from './pages/LoginPage';
 import SignUpPage from './pages/SignUpPage';
 import HomePage from './pages/HomePage';
+import ChatPage from './pages/ChatPage';
 import { Amplify, Auth, Hub } from 'aws-amplify';
 import { colors } from './pages/components/SharedStyles';
 

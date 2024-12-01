@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import AppPage from './components/AppPage';
 import { colors } from './components/SharedStyles';
+import { useNavigate } from 'react-router-dom';
 import { useLogin } from '../hooks/useLogin';
 import { useAlert } from '../hooks/useAlert';
 import Button from './components/Button';
@@ -25,42 +26,38 @@ function LoginPage() {
   };
 
   return (
-    <div style={styles.authContainer}>
+    <AppPage style={styles.authContainer}>
       <h1 style={styles.heading}>Ajentify</h1>
-      <div style={styles.inputContainer}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          style={styles.input}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          style={styles.input}
-        />
-        <Button onClick={handleLogin} style={styles.button} isLoading={loginLoading}>
-          Login
-        </Button>
-        <Button onClick={() => navigate('/signup')} style={{ ...styles.button, ...styles.secondaryButton }}>
-          Create Account
-        </Button>
-      </div>
-    </div>
+        <div style={styles.inputContainer}>
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={styles.input}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            style={styles.input}
+          />
+          <Button onClick={handleLogin} style={styles.button} isLoading={loginLoading}>
+            Login
+          </Button>
+          <Button onClick={() => navigate('/signup')} style={{ ...styles.button, ...styles.secondaryButton }}>
+            Create Account
+          </Button>
+        </div>
+    </AppPage>
   );
 }
 
 const styles = {
   authContainer: {
-    display: 'flex',
-    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    height: '100vh',
-    backgroundColor: colors.background,
     color: colors.text,
   },
   heading: {
