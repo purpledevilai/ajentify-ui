@@ -2,8 +2,6 @@ import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
 import ChatBox from "../sharedcomponents/chatbox/ChatBox";
 import Sidebar from "./components/Sidebar";
 import Header from "../sharedcomponents/Header";
-import { Auth } from 'aws-amplify';
-import { useNavigate } from 'react-router-dom';
 import { useAppContext } from "../../context/AppContext";
 import { colors } from '../sharedcomponents/SharedStyles';
 import Alert from '../sharedcomponents/Alert';
@@ -23,14 +21,12 @@ function ChatPage() {
     contextLoading,
     currentContext,
     fetchContext,
-    resetContext
   } = useAppContext();
   const [alert, setAlert] = useState({ isOpen: false, title: '', message: '' });
   const [selectedAgent, setSelectedAgent] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const startedInitalLoadRef = useRef(false);
-  const navigate = useNavigate();
 
   useEffect(() => {
     if (!startedInitalLoadRef.current) {

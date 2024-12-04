@@ -16,7 +16,6 @@ const CreateAgentPage = () => {
     const [agentDescription, setAgentDescription] = useState('');
     const [agentPrompt, setAgentPrompt] = useState('');
     const [testModalOpen, setTestModalOpen] = useState(false);
-    const [modalLoading, setModalLoading] = useState(false);
     const {
         context: currentPEContext,
         error: peContextError,
@@ -40,7 +39,7 @@ const CreateAgentPage = () => {
                 onClose: clearPEContextError
             });
         }
-    }, [peContextError, clearPEContextError]);
+    }, [showAlert, peContextError, clearPEContextError]);
 
     const onUIUpdate = (uiUpdates) => {
         for (const update of uiUpdates) {
@@ -52,8 +51,6 @@ const CreateAgentPage = () => {
 
     const testAgentHandler = async () => {
         setTestModalOpen(true);
-        setModalLoading(true);
-
         try {
             // Create agent if it doesn't exist
             let agent = currentAgent;
@@ -83,13 +80,11 @@ const CreateAgentPage = () => {
                 agent_id: agent.agent_id,
             });
             setAgentContext(context);
-            setModalLoading(false);
         } catch (error) {
             showAlert({
                 title: 'Error',
                 message: error.message,
             });
-            setModalLoading(false);
         }
     };
 
@@ -146,7 +141,7 @@ const CreateAgentPage = () => {
                 <div style={styles.modalOverlay}>
                     <div style={styles.modal}>
                         <button style={styles.modalCloseButton} onClick={() => setTestModalOpen(false)}>✖</button>
-                        {modalLoading ? (
+                        {(createAgentLoading || agentContextLoading || agentUpdateLoading) ? (
                             <LoadingShimmerBox height={300} />
                         ) : (
                             agentContext && (
