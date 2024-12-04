@@ -12,7 +12,7 @@ const HomePage = () => {
 
   useEffect(() => {
     getAgents();
-  }, []);
+  }, [getAgents]);
 
   return (
     <AppPage>
