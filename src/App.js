@@ -1,55 +1,69 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import SignUpPage from './pages/SignUpPage';
-import HomePage from './pages/HomePage';
-import { Amplify, Auth } from 'aws-amplify';
-import { useAppContext } from './context/AppContext';
-import { colors } from './pages/components/SharedStyles';
+import LoginPage from './pages/loginpage/LoginPage';
+import SignUpPage from './pages/signuppage/SignUpPage';
+import HomePage from './pages/homepage/HomePage';
+import ChatPage from './pages/chatpage/ChatPage';
+import CreateAgentPage from './pages/createagentpage/CreateAgentPage';
+import { Amplify, Auth, Hub } from 'aws-amplify';
+import { colors } from './pages/sharedcomponents/SharedStyles';
 
 Amplify.configure({
   Auth: {
-    region: "ap-southeast-4",
-    userPoolId: "ap-southeast-4_NafqYoG7v",
-    userPoolWebClientId: "204io607m870s4g626vnm6viqq"
+    region: process.env.REACT_APP_AWS_REGION,
+    userPoolId: process.env.REACT_APP_AWS_USER_POOL_ID,
+    userPoolWebClientId: process.env.REACT_APP_AWS_USER_POOL_WEB_CLIENT_ID,
   }
 });
 
 function App() {
-  const { isLoggedIn, setIsLoggedIn } = useAppContext();
-  const [loading, setLoading] = useState(true); // Loading state for initial check
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
-    checkAuth();
-  });
+    // Initial authentication check
+    Auth.currentAuthenticatedUser()
+      .then(() => {
+        console.log("User is logged in");
+        if (location.pathname === '/login' || location.pathname === '/signup') {
+          navigate('/');
+        }
+      })
+      .catch(() => {
+        console.log("User is not logged in");
+        if (location.pathname !== '/login' && location.pathname !== '/signup') {
+          navigate('/login');
+        }
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [navigate, location.pathname]);
 
+  // Listen for Amplify Hub events
   useEffect(() => {
-    if (!loading) {
-      // Redirect based on authentication status
-      if (isLoggedIn) {
-        navigate('/');
-      } else if (location.pathname === '/') {
+    const handleAuthEvents = (data) => {
+      const { event } = data.payload;
+      if (event === 'signIn') {
+        console.log("User signed in");
+        if (location.pathname !== '/signup') { // When we sign in for user creation, we don't want to redirect
+          navigate('/');
+        }
+      } else if (event === 'signOut') {
+        console.log("User signed out");
         navigate('/login');
       }
-    }
-  }, [isLoggedIn, loading, navigate, location.pathname]);
+    };
 
-  const checkAuth = async () => {
-    try {
-      await Auth.currentAuthenticatedUser();
-      setIsLoggedIn(true);
-      console.log("User is logged in");
-      console.log(`access token: ${Auth.user.signInUserSession.accessToken.jwtToken ?? 'undefined'}`);
-    } catch (error) {
-      setIsLoggedIn(false);
-      console.log("User is not logged in");
-    } finally {
-      setLoading(false); // Mark loading as complete once authentication is checked
-    }
-  };
+    Hub.listen('auth', handleAuthEvents);
+
+    // Cleanup the listener on component unmount
+    return () => {
+      Hub.remove('auth', handleAuthEvents);
+    };
+  }, [navigate]);
 
   // Show a loading spinner while checking authentication status
   if (loading) {
@@ -65,11 +79,13 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/" element={<HomePage />} />
+      <Route path="/create-agent" element={<CreateAgentPage />} />
+      <Route path="/chat" element={<ChatPage />} />
     </Routes>
   );
 }
 
-// Wrapper for Router
+// Wrapper for Router - So you can use navigate in app
 export default function AppWithRouter() {
   return (
     <Router>
@@ -85,7 +101,7 @@ const styles = {
     justifyContent: 'center',
     alignItems: 'center',
     height: '100vh',
-    backgroundColor: colors.background, // Set background color from shared styles
+    backgroundColor: colors.background,
   },
   spinner: {
     width: '50px',
@@ -97,13 +113,11 @@ const styles = {
   },
 };
 
-// Keyframes for spinner animation
 const keyframes = `
 @keyframes spin {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }`;
 
-// Inject the keyframes into the document
 const styleSheet = document.styleSheets[0];
 styleSheet.insertRule(keyframes, styleSheet.cssRules.length);

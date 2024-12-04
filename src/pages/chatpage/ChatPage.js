@@ -1,16 +1,16 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from "react";
-import ChatBox from "./components/chatbox/ChatBox";
+import ChatBox from "../sharedcomponents/chatbox/ChatBox";
 import Sidebar from "./components/Sidebar";
-import Header from "./components/Header";
+import Header from "../sharedcomponents/Header";
 import { Auth } from 'aws-amplify';
 import { useNavigate } from 'react-router-dom';
-import { useAppContext } from "../context/AppContext";
-import { colors } from './components/SharedStyles';
-import Alert from './components/Alert';
-import Button from './components/Button';
-import LoadingIndicator from './components/LoadingIndicator';
+import { useAppContext } from "../../context/AppContext";
+import { colors } from '../sharedcomponents/SharedStyles';
+import Alert from '../sharedcomponents/Alert';
+import Button from '../sharedcomponents/Button';
+import LoadingIndicator from '../sharedcomponents/LoadingIndicator';
 
-function HomePage() {
+function ChatPage() {
   const {
     fetchAgents,
     agents,
@@ -77,20 +77,6 @@ function HomePage() {
     return () => window.removeEventListener("resize", checkMobileStatus);
   }, []);
 
-  const handleLogout = async () => {
-    try {
-      await Auth.signOut();
-      resetContext();
-      navigate('/login');
-    } catch (error) {
-      setAlert({
-        isOpen: true,
-        title: 'Logout Failed',
-        message: error.message || 'An unknown error occurred. Please try again.',
-      });
-    }
-  };
-
   const closeAlert = () => {
     setAlert({ isOpen: false, title: '', message: '' });
   };
@@ -110,7 +96,6 @@ function HomePage() {
       <Header
         isMobile={isMobile}
         onToggleSidebar={toggleSidebar}
-        onLogout={handleLogout}
       />
 
       <div style={styles.outerContentContainer}>
@@ -234,4 +219,4 @@ const styles = {
   },
 };
 
-export default HomePage;
+export default ChatPage;
