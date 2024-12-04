@@ -63,7 +63,7 @@ function App() {
     return () => {
       Hub.remove('auth', handleAuthEvents);
     };
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   // Show a loading spinner while checking authentication status
   if (loading) {

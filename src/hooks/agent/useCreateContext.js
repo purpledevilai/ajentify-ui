@@ -31,7 +31,7 @@ export const useCreateContext = ({ agent_id, invoke_agent_message }) => {
         if (loadInitiatedRef.current) return;
         loadInitiatedRef.current = true;
         createContext({ agent_id, invoke_agent_message });
-    }, []);
+    }, [agent_id, invoke_agent_message]);
 
     const createContext = async ({ agent_id, invoke_agent_message }) => {
         try {

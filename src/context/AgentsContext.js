@@ -11,12 +11,12 @@ export const AgentContextProvider = ({ children }) => {
     const { getAgents: hookGetAgents, loading: getAgentsLoading } = useGetAgents();
 
     const getAgents = useCallback(async (forceUpdate = false) => {
-        if (agentsLoadedRef.current == false || forceUpdate) {
+        if (agentsLoadedRef.current === false || forceUpdate) {
             const agents = await hookGetAgents();
             setAgents(agents);
         }
         agentsLoadedRef.current = true;
-    }, []);
+    }, [hookGetAgents]);
 
     return (
         <AgentContext.Provider value={{
