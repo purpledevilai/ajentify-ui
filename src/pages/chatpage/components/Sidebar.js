@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
-import { colors } from './SharedStyles';
-import Button from './Button';
-import LoadingIndicator from './LoadingIndicator';
+import { colors } from '../../sharedcomponents/SharedStyles';
+import Button from '../../sharedcomponents/Button';
+import LoadingIndicator from '../../sharedcomponents/LoadingIndicator';
 
 const Sidebar = ({ agents, agentsLoading, selectedAgent, setSelectedAgent, isSidebarOpen, setIsSidebarOpen, isMobile, chatHistory, chatHistoryLoading, onStartConversation, onContextClicked }) => {
     const sidebarRef = useRef(null);

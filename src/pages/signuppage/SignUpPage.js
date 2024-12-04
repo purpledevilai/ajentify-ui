@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { colors } from './components/SharedStyles';
-import { useAlert } from '../hooks/useAlert';
-import AppPage from './components/AppPage';
-import Button from './components/Button';
-import { useSignUp } from "../hooks/useSignUp";
-import { useConfirmSignUp } from '../hooks/useConfirmSignUp';
-import { useLogin } from '../hooks/useLogin';
-import { useCreateUser } from '../hooks/useCreateUser';
-import { useCreateOrganization } from '../hooks/useCreateOrganization';
+import { colors } from '../sharedcomponents/SharedStyles';
+import { useAlert } from '../../hooks/useAlert';
+import AppPage from '../sharedcomponents/AppPage';
+import Button from '../sharedcomponents/Button';
+import { useSignUp } from "../../hooks/user/useSignUp";
+import { useConfirmSignUp } from '../../hooks/user/useConfirmSignUp';
+import { useLogin } from '../../hooks/user/useLogin';
+import { useCreateUser } from '../../hooks/user/useCreateUser';
+import { useCreateOrganization } from '../../hooks/user/useCreateOrganization';
 
 function SignUpPage() {
   const [firstName, setFirstName] = useState('');

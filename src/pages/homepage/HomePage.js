@@ -1,10 +1,10 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import AppPage from "./components/AppPage";
-import Header from "./components/Header";
-import LoadingShimmerBox from "./components/LoadingShimmerBox";
-import { useAgentContext } from "../context/AgentsContext";
-import { colors } from "./components/SharedStyles";
+import AppPage from "../sharedcomponents/AppPage";
+import Header from "../sharedcomponents/Header";
+import LoadingShimmerBox from "../sharedcomponents/LoadingShimmerBox";
+import { useAgentContext } from "../../context/AgentsContext";
+import { colors } from "../sharedcomponents/SharedStyles";
 
 const HomePage = () => {
   const { agents, getAgents, getAgentsLoading } = useAgentContext();

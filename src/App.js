@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import './App.css';
 import { BrowserRouter as Router, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
-import LoginPage from './pages/LoginPage';
-import SignUpPage from './pages/SignUpPage';
-import HomePage from './pages/HomePage';
-import ChatPage from './pages/ChatPage';
-import CreateAgentPage from './pages/CreateAgentPage';
+import LoginPage from './pages/loginpage/LoginPage';
+import SignUpPage from './pages/signuppage/SignUpPage';
+import HomePage from './pages/homepage/HomePage';
+import ChatPage from './pages/chatpage/ChatPage';
+import CreateAgentPage from './pages/createagentpage/CreateAgentPage';
 import { Amplify, Auth, Hub } from 'aws-amplify';
-import { colors } from './pages/components/SharedStyles';
+import { colors } from './pages/sharedcomponents/SharedStyles';
 
 Amplify.configure({
   Auth: {
@@ -80,6 +80,7 @@ function App() {
       <Route path="/signup" element={<SignUpPage />} />
       <Route path="/" element={<HomePage />} />
       <Route path="/create-agent" element={<CreateAgentPage />} />
+      <Route path="/chat" element={<ChatPage />} />
     </Routes>
   );
 }

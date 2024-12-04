@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { colors } from './components/SharedStyles';
-import AppPage from './components/AppPage';
-import Header from './components/Header';
-import Button from './components/Button';
-import ChatBox from './components/chatbox/ChatBox';
-import { useAlert } from '../hooks/useAlert';
-import { useCreateContext, useCreateContextLazy } from '../hooks/useCreateContext';
-import { useCreateAgent } from '../hooks/useCreateAgent';
-import { useUpdateAgent } from '../hooks/useUpdateAgent';
-import LoadingShimmerBox from './components/LoadingShimmerBox';
+import { colors } from '../sharedcomponents/SharedStyles';
+import AppPage from '../sharedcomponents/AppPage';
+import Header from '../sharedcomponents/Header';
+import Button from '../sharedcomponents/Button';
+import ChatBox from '../sharedcomponents/chatbox/ChatBox';
+import { useAlert } from '../../hooks/useAlert';
+import { useCreateContext, useCreateContextLazy } from '../../hooks/agent/useCreateContext';
+import { useCreateAgent } from '../../hooks/agent/useCreateAgent';
+import { useUpdateAgent } from '../../hooks/agent/useUpdateAgent';
+import LoadingShimmerBox from '../sharedcomponents/LoadingShimmerBox';
 
 const CreateAgentPage = () => {
     const [agentName, setAgentName] = useState('');

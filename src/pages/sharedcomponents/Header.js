@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Button from './Button';
 import { colors } from './SharedStyles';
-import { useLogout } from "../../hooks/useLogout";
+import { useLogout } from "../../hooks/user/useLogout";
 import { useAlert } from '../../hooks/useAlert';
 
 const Header = ({ isMobile, onToggleSidebar }) => {

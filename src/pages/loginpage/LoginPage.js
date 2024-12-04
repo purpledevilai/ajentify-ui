@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import AppPage from './components/AppPage';
-import { colors } from './components/SharedStyles';
+import AppPage from '../sharedcomponents/AppPage';
+import { colors } from '../sharedcomponents/SharedStyles';
 import { useNavigate } from 'react-router-dom';
-import { useLogin } from '../hooks/useLogin';
-import { useAlert } from '../hooks/useAlert';
-import Button from './components/Button';
+import { useLogin } from '../../hooks/user/useLogin';
+import { useAlert } from '../../hooks/useAlert';
+import Button from '../sharedcomponents/Button';
 
 function LoginPage() {
   const [email, setEmail] = useState('');

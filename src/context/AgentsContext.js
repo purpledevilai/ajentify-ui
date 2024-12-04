@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useCallback, useRef } from "react";
-import { useGetAgents } from "../hooks/useGetAgents";
+import { useGetAgents } from "../hooks/agent/useGetAgents";
 
 const AgentContext = createContext();
 

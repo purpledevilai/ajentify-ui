@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { Auth } from 'aws-amplify';
-import { createUrlParams } from "../lib/helpers/CreateURLParams";
+import { createUrlParams } from "../../lib/helpers/CreateURLParams";
 
 const createContextAPI = async ({ agent_id, invoke_agent_message }) => {
     try {
