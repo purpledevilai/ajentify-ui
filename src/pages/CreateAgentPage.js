@@ -6,33 +6,41 @@ import Header from './components/Header';
 import Button from './components/Button';
 import ChatBox from './components/chatbox/ChatBox';
 import { useAlert } from '../hooks/useAlert';
-import { useCreateContext } from '../hooks/useCreateContext';
+import { useCreateContext, useCreateContextLazy } from '../hooks/useCreateContext';
+import { useCreateAgent } from '../hooks/useCreateAgent';
+import { useUpdateAgent } from '../hooks/useUpdateAgent';
 import LoadingShimmerBox from './components/LoadingShimmerBox';
 
 const CreateAgentPage = () => {
     const [agentName, setAgentName] = useState('');
     const [agentDescription, setAgentDescription] = useState('');
     const [agentPrompt, setAgentPrompt] = useState('');
-    const [loading, setLoading] = useState(false);
+    const [testModalOpen, setTestModalOpen] = useState(false);
+    const [modalLoading, setModalLoading] = useState(false);
     const {
-        context: currentContext,
-        error: contextError,
-        loading: contextLoading,
-        clearError: clearContextError
+        context: currentPEContext,
+        error: peContextError,
+        loading: peContextLoading,
+        clearError: clearPEContextError
     } = useCreateContext({ agent_id: "aj-prompt-engineer", invoke_agent_message: true });
-    const navigate = useNavigate()
+    const { createAgent, loading: createAgentLoading } = useCreateAgent();
+    const [currentAgent, setCurrentAgent] = useState(null);
+    const { createContext, loading: agentContextLoading } = useCreateContextLazy();
+    const [agentContext, setAgentContext] = useState(null);
+    const { updateAgent, loading: agentUpdateLoading } = useUpdateAgent();
+    const hasAgentUpdatesRef = useRef(false);
+    const navigate = useNavigate();
     const showAlert = useAlert();
 
     useEffect(() => {
-        if (contextError) {
+        if (peContextError) {
             showAlert({
                 title: 'Error',
-                message: contextError,
-                onClose: clearContextError
-            })
+                message: peContextError,
+                onClose: clearPEContextError
+            });
         }
-
-    }, [contextError, clearContextError]);
+    }, [peContextError, clearPEContextError]);
 
     const onUIUpdate = (uiUpdates) => {
         for (const update of uiUpdates) {
@@ -42,9 +50,47 @@ const CreateAgentPage = () => {
         }
     };
 
+    const testAgentHandler = async () => {
+        setTestModalOpen(true);
+        setModalLoading(true);
 
-    const createAgent = async () => {
+        try {
+            // Create agent if it doesn't exist
+            let agent = currentAgent;
+            if (!currentAgent) {
+                agent = await createAgent({
+                    agent_name: agentName,
+                    agent_description: agentDescription,
+                    prompt: agentPrompt,
+                });
+                setCurrentAgent(agent);
+            }
 
+            // Update if needed
+            if (hasAgentUpdatesRef.current) {
+                agent = await updateAgent({
+                    agent_id: agent.agent_id,
+                    agent_name: agentName,
+                    agent_description: agentDescription,
+                    prompt: agentPrompt,
+                });
+                setCurrentAgent(agent);
+                hasAgentUpdatesRef.current = false;
+            }
+
+            // Create context with agent
+            const context = await createContext({
+                agent_id: agent.agent_id,
+            });
+            setAgentContext(context);
+            setModalLoading(false);
+        } catch (error) {
+            showAlert({
+                title: 'Error',
+                message: error.message,
+            });
+            setModalLoading(false);
+        }
     };
 
     return (
@@ -55,27 +101,39 @@ const CreateAgentPage = () => {
             </button>
             <div style={styles.createAgentContainer}>
                 <h1>Create Agent</h1>
-                <div style={styles.formField}>
+                <div>
                     <label>Agent Name</label>
-                    <input style={styles.input} type="text" value={agentName} onChange={(e) => setAgentName(e.target.value)} />
+                    <input style={styles.input} type="text" value={agentName} onChange={(e) => {
+                        hasAgentUpdatesRef.current = true;
+                        setAgentName(e.target.value)
+                    }} />
                 </div>
-                <div style={styles.formField}>
+                <div>
                     <label>Agent Description</label>
-                    <textarea style={styles.input} value={agentDescription} onChange={(e) => setAgentDescription(e.target.value)} />
+                    <textarea style={styles.input} value={agentDescription} onChange={(e) => {
+                        hasAgentUpdatesRef.current = true;
+                        setAgentDescription(e.target.value)
+                    }} />
                 </div>
                 <div style={styles.promptAndPromptChatContainer}>
                     <div style={styles.promptInputContainer}>
-                        <label>Agent Prompt</label>
-                        <textarea style={styles.promptInput} value={agentPrompt} onChange={(e) => setAgentPrompt(e.target.value)} />
+                        <div style={styles.agentPromptLableAndTestButtonContainer}>
+                            <label>Agent Prompt</label>
+                            <button style={styles.testAgentButton} onClick={testAgentHandler}>Test Agent</button>
+                        </div>
+                        <textarea style={styles.promptInput} value={agentPrompt} onChange={(e) => {
+                            hasAgentUpdatesRef.current = true;
+                            setAgentPrompt(e.target.value)
+                        }} />
                     </div>
                     <div style={styles.promptChatContainer}>
                         <label>AJ - your prompt engineer</label>
                         <div style={styles.chatBoxContainer}>
-                            {contextLoading ? (
-                                <LoadingShimmerBox height={600} />
+                            {peContextLoading ? (
+                                <LoadingShimmerBox height={500} />
                             ) : (
-                                currentContext && (
-                                    <ChatBox key={currentContext.context_id} context={currentContext} onUIUpdate={onUIUpdate}/>
+                                currentPEContext && (
+                                    <ChatBox key={currentPEContext.context_id} context={currentPEContext} onUIUpdate={onUIUpdate} />
                                 )
                             )}
                         </div>
@@ -83,8 +141,22 @@ const CreateAgentPage = () => {
                 </div>
                 <Button style={styles.createAgentButton}>Create Agent</Button>
             </div>
-        </AppPage>
 
+            {testModalOpen && (
+                <div style={styles.modalOverlay}>
+                    <div style={styles.modal}>
+                        <button style={styles.modalCloseButton} onClick={() => setTestModalOpen(false)}>✖</button>
+                        {modalLoading ? (
+                            <LoadingShimmerBox height={300} />
+                        ) : (
+                            agentContext && (
+                                <ChatBox key={agentContext.context_id} context={agentContext} onUIUpdate={onUIUpdate} />
+                            )
+                        )}
+                    </div>
+                </div>
+            )}
+        </AppPage>
     );
 };
 
@@ -106,9 +178,6 @@ const styles = {
         fontSize: '1rem',
         cursor: 'pointer',
     },
-    formField: {
-        marginBottom: '20px',
-    },
     input: {
         width: '100%',
         padding: '10px',
@@ -118,24 +187,33 @@ const styles = {
         border: `1px solid ${colors.primary}`,
         boxSizing: 'border-box',
     },
-    chatBoxContainer: {
-        paddingTop: '12px',
-        height: '100%',
-    },
     promptAndPromptChatContainer: {
         display: 'flex',
         flexDirection: 'row',
         gap: '20px',
-        height: '600px', // Fixed height
-        flexShrink: 0, // Prevent shrinking, ensures this container keeps its height
+        minHeight: '600px',
+        maxHeight: '600px',
+    },
+    agentPromptLableAndTestButtonContainer: {
+        display: 'flex',
+        justifyContent: 'space-between',
     },
     promptInputContainer: {
+        display: 'flex',
+        flexDirection: 'column',
         flex: '1',
+    },
+    testAgentButton: {
+        backgroundColor: 'transparent',
+        border: 'none',
+        color: colors.primary,
+        fontSize: '1rem',
+        cursor: 'pointer',
     },
     promptInput: {
         width: '100%',
-        height: '100%',
-        padding: '10px',
+        flex: 1,
+        padding: 0,
         margin: '10px 0',
         fontSize: '1rem',
         borderRadius: '5px',
@@ -144,6 +222,14 @@ const styles = {
     },
     promptChatContainer: {
         flex: '1',
+        display: 'flex',
+        height: '100%',
+        flexDirection: 'column',
+    },
+    chatBoxContainer: {
+        margin: '10px 0',
+        height: '93%',
+        width: '99%',
     },
     createAgentButton: {
         padding: '10px',
@@ -152,6 +238,36 @@ const styles = {
         border: 'none',
         alignSelf: 'center', // Center the button horizontally
         marginTop: '40px', // Add space above the button
+    },
+    modalOverlay: {
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+    },
+    modal: {
+        backgroundColor: 'white',
+        padding: '30px',
+        borderRadius: '8px',
+        width: '80%',
+        maxWidth: '600px',
+        height: '80%',
+        position: 'relative',
+    },
+    modalCloseButton: {
+        position: 'absolute',
+        top: '2px',
+        right: '2px',
+        background: 'none',
+        border: 'none',
+        fontSize: '1.5rem',
+        cursor: 'pointer',
     },
 };
 

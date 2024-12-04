@@ -99,7 +99,7 @@ const styles = {
     messages: {
         flex: 1,
         overflowY: 'auto',
-        padding: '10px 20px',
+        padding: '20px 10px 150px 20px',
         paddingBottom: '150px',
         boxSizing: 'border-box',
     },
